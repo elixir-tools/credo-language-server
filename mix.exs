@@ -22,8 +22,8 @@ defmodule CredoLanguageServer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:gen_lsp, "~> 0.0.9"},
-      {:gen_lsp, path: "../gen_lsp"},
+      {:gen_lsp, "~> 0.0.10"},
+      # {:gen_lsp, path: "../gen_lsp"},
       {:credo, "~> 1.0"}
     ]
   end

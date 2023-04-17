@@ -106,7 +106,7 @@ defmodule CredoLanguageServer do
 
   @impl true
   def handle_notification(%Initialized{}, lsp) do
-    GenLSP.log(lsp, :log, "[Credo] LSP Initialized!")
+    GenLSP.log(lsp, "[Credo] LSP Initialized!")
     refresh(lsp)
     publish(lsp)
 
@@ -155,7 +155,7 @@ defmodule CredoLanguageServer do
       |> Credo.run()
       |> Credo.Execution.get_issues()
 
-    GenLSP.log(lsp, :info, "[Credo] Found #{Enum.count(issues)} issues")
+    GenLSP.info(lsp, "[Credo] Found #{Enum.count(issues)} issues")
 
     for issue <- issues do
       diagnostic = %Diagnostic{
