@@ -1,21 +1,25 @@
-# CredoLanguageServer
+# credo-language-server
 
-**TODO: Add description**
+credo-langauge-server is an LSP implementation for Credo.
+
+## Features
+
+* Project wide diagnostics
+* Code Actions
+
+## Editor Support
+
+- Neovim: [elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim)
+- VSCode: [elixir-tools.vscode](https://github.com/elixir-tools/elixir-tools.vscode)
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `credo_language_server` to your list of dependencies in `mix.exs`:
+The preferred way to use credo-language-server is through one of the supported editor extensions.
 
-```elixir
-def deps do
-  [
-    {:credo_language_server, "~> 0.1.0"}
-  ]
-end
-```
+If you need to install credo-language-server on it's own, you can download the executable hosted by the GitHub release. The executable is an Elixir script that utilizes `Mix.install/2`.
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/credo_language_server>.
+## Code Actions
 
+### Disable Check
+
+If there is a check that you'd wish to disable, you can trigger the code action on that line to insert a magic comment to disable that check.
