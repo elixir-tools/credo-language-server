@@ -23,3 +23,7 @@ If you need to install credo-language-server on it's own, you can download the e
 ### Disable Check
 
 If there is a check that you'd wish to disable, you can trigger the code action on that line to insert a magic comment to disable that check.
+
+---
+
+Built with [gen_lsp](https://github.com/mhanberg/gen_lsp)
