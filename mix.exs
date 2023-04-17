@@ -5,7 +5,7 @@ defmodule CredoLanguageServer.MixProject do
     [
       app: :credo_language_server,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -22,8 +22,9 @@ defmodule CredoLanguageServer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      # {:gen_lsp, "~> 0.0.9"},
+      {:gen_lsp, path: "../gen_lsp"},
+      {:credo, "~> 1.0"}
     ]
   end
 end
