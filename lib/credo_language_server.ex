@@ -151,7 +151,7 @@ defmodule CredoLanguageServer do
     dir = URI.parse(lsp.assigns.root_uri).path
 
     issues =
-      ["--strict", "--all", "#{dir}/**/*.ex"]
+      ["--strict", "--all", "--working-dir", dir]
       |> Credo.run()
       |> Credo.Execution.get_issues()
 

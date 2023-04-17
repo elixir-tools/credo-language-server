@@ -55,7 +55,7 @@ defmodule CredoLanguageServerTest do
         to_string(%URI{
           host: "",
           scheme: "file",
-          path: Path.join([cwd, "test/support/fixtures", file])
+          path: Path.join([cwd, "test/support/fixtures/lib", file])
         })
 
       assert_notification(
@@ -73,7 +73,7 @@ defmodule CredoLanguageServerTest do
       to_string(%URI{
         host: "",
         scheme: "file",
-        path: Path.join([cwd, "test/support/fixtures", "foo.ex"])
+        path: Path.join([cwd, "test/support/fixtures/lib", "foo.ex"])
       })
 
     assert_notification(
