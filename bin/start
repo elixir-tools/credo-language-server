@@ -1,0 +1,5 @@
+#/usr/bin/env bash
+
+# used for local development
+
+mix run --no-halt -e "Application.ensure_all_started(:credo_language_server)" -- "$@"
