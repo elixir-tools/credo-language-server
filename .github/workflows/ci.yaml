@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Tests (Elixir ${{matrix.elixir}} | Erlang/OTP ${{matrix.otp}})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -32,6 +32,7 @@ jobs:
           elixir-version: ${{matrix.elixir}}
 
       - uses: actions/cache@v3
+        id: cache
         with:
           path: |
             deps
@@ -41,6 +42,7 @@ jobs:
             ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
 
       - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: mix deps.get --only test
 
       - name: Run tests
@@ -56,6 +58,7 @@ jobs:
           otp-version: 25.x
           elixir-version: 1.14.x
       - uses: actions/cache@v3
+        id: cache
         with:
           path: |
             deps
@@ -65,6 +68,7 @@ jobs:
             ${{ runner.os }}-mix-25-1.14-
 
       - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: mix deps.get
 
       - name: Run Formatter
