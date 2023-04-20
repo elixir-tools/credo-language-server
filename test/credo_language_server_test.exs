@@ -122,6 +122,23 @@ defmodule CredoLanguageServerTest do
             }
           },
           "title" => "Disable Credo.Check.Readability.ModuleDoc"
+        },
+        %{
+          "data" => nil,
+          "edit" => %{
+            "changes" => %{
+              ^uri => [
+                %{
+                  "newText" => "  @moduledoc false\n",
+                  "range" => %{
+                    "end" => %{"character" => 0, "line" => 1},
+                    "start" => %{"character" => 0, "line" => 1}
+                  }
+                }
+              ]
+            }
+          },
+          "title" => "Add \"@moduledoc false\""
         }
       ],
       500
