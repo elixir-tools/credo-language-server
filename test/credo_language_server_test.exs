@@ -28,27 +28,35 @@ defmodule CredoLanguageServerTest do
   end
 
   test "can initialize the server" do
-    assert_result(1, %{
-      "capabilities" => %{
-        "textDocumentSync" => %{
-          "openClose" => true,
-          "save" => %{
-            "includeText" => true
-          },
-          "change" => 1
-        }
+    assert_result(
+      1,
+      %{
+        "capabilities" => %{
+          "textDocumentSync" => %{
+            "openClose" => true,
+            "save" => %{
+              "includeText" => true
+            },
+            "change" => 1
+          }
+        },
+        "serverInfo" => %{"name" => "Credo"}
       },
-      "serverInfo" => %{"name" => "Credo"}
-    })
+      500
+    )
   end
 
   test "publishes diagnostics once the client has initialized", %{client: client, cwd: cwd} do
     assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
 
-    assert_notification("window/logMessage", %{
-      "message" => "[Credo] LSP Initialized!",
-      "type" => 4
-    })
+    assert_notification(
+      "window/logMessage",
+      %{
+        "message" => "[Credo] LSP Initialized!",
+        "type" => 4
+      },
+      500
+    )
 
     for file <- ["foo.ex", "bar.ex"] do
       uri =
@@ -115,7 +123,8 @@ defmodule CredoLanguageServerTest do
           },
           "title" => "Disable Credo.Check.Readability.ModuleDoc"
         }
-      ]
+      ],
+      500
     )
   end
 end
