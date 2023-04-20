@@ -41,11 +41,31 @@ jobs:
             ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
 
       - name: Install Dependencies
-        run: |
-          mix deps.get --only test
+        run: mix deps.get --only test
 
       - name: Run tests
         run: mix test
 
-      - name: Check formatter
+  formatter:
+    runs-on: ubuntu-latest
+    name: Formatter (1.14.x.x/25.x)
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 25.x
+          elixir-version: 1.14.x
+      - uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-25-1.14-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-25-1.14-
+
+      - name: Install Dependencies
+        run: mix deps.get
+
+      - name: Run Formatter
         run: mix format --check-formatted
