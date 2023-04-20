@@ -31,7 +31,6 @@ defmodule CredoLanguageServer do
   }
 
   alias CredoLanguageServer.Cache, as: Diagnostics
-  alias CredoLanguageServer.CodeActions
 
   def start_link(args) do
     {args, opts} = Keyword.split(args, [:cache])
