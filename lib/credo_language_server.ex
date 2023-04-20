@@ -72,33 +72,15 @@ defmodule CredoLanguageServer do
         lsp
       ) do
     code_actions =
-      for %GenLSP.Structures.Diagnostic{} = d <- diagnostics do
-        check =
-          d.data["check"]
-          |> to_string()
-          |> String.replace("Elixir.", "")
-
-        position = %GenLSP.Structures.Position{
-          line: d.range.start.line,
-          character: 0
-        }
-
-        [
-          %GenLSP.Structures.CodeAction{
-            title: "Disable #{check}",
-            edit: %GenLSP.Structures.WorkspaceEdit{
-              changes: %{
-                uri => [
-                  %GenLSP.Structures.TextEdit{
-                    new_text: "# credo:disable-for-next-line #{check}\n",
-                    range: %GenLSP.Structures.Range{start: position, end: position}
-                  }
-                ]
-              }
-            }
-          }
-        ] ++ actions_for(check, uri, d)
-      end
+      diagnostics
+      |> Enum.map(fn %GenLSP.Structures.Diagnostic{} = diagnostic ->
+        diagnostic
+        |> extract_check_name()
+        |> CredoLanguageServer.CodeActions.for_check()
+        |> Enum.map(fn m ->
+          m.actions(uri, diagnostic)
+        end)
+      end)
       |> List.flatten()
 
     {:reply, code_actions, lsp}
@@ -199,8 +181,9 @@ defmodule CredoLanguageServer do
   defp category_to_severity(:consistency), do: DiagnosticSeverity.hint()
   defp category_to_severity(:readability), do: DiagnosticSeverity.hint()
 
-  defp actions_for("Credo.Check.Readability.ModuleDoc", uri, diagnostic),
-    do: CodeActions.ModuleDoc.actions(uri, diagnostic)
-
-  defp actions_for(_check_name, _uri, _diagnostic), do: []
+  defp extract_check_name(%GenLSP.Structures.Diagnostic{data: data}) do
+    data["check"]
+    |> to_string()
+    |> String.replace("Elixir.", "")
+  end
 end
