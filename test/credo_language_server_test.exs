@@ -50,12 +50,14 @@ defmodule CredoLanguageServerTest do
                         },
                         500
 
-    assert_error ^id,
-                 %{
-                   "code" => -32601,
-                   "message" => "Method Not Found: textDocument/documentSymbol"
-                 },
-                 500
+    assert_error(
+      ^id,
+      %{
+        "code" => -32601,
+        "message" => "Method Not Found: textDocument/documentSymbol"
+      },
+      500
+    )
   end
 
   test "can initialize the server" do
@@ -141,6 +143,23 @@ defmodule CredoLanguageServerTest do
                         }
                       },
                       "title" => "Disable Credo.Check.Readability.ModuleDoc"
+                    },
+                    %{
+                      "data" => nil,
+                      "edit" => %{
+                        "changes" => %{
+                          ^uri => [
+                            %{
+                              "newText" => "  @moduledoc false\n",
+                              "range" => %{
+                                "end" => %{"character" => 0, "line" => 1},
+                                "start" => %{"character" => 0, "line" => 1}
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "title" => "Add \"@moduledoc false\""
                     }
                   ],
                   500
