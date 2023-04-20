@@ -28,18 +28,22 @@ defmodule CredoLanguageServerTest do
   end
 
   test "can initialize the server" do
-    assert_result(1, %{
-      "capabilities" => %{
-        "textDocumentSync" => %{
-          "openClose" => true,
-          "save" => %{
-            "includeText" => true
-          },
-          "change" => 1
-        }
+    assert_result(
+      1,
+      %{
+        "capabilities" => %{
+          "textDocumentSync" => %{
+            "openClose" => true,
+            "save" => %{
+              "includeText" => true
+            },
+            "change" => 1
+          }
+        },
+        "serverInfo" => %{"name" => "Credo"}
       },
-      "serverInfo" => %{"name" => "Credo"}
-    })
+      500
+    )
   end
 
   test "publishes diagnostics once the client has initialized", %{client: client, cwd: cwd} do
