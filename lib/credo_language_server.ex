@@ -89,20 +89,23 @@ defmodule CredoLanguageServer do
           character: 0
         }
 
-        %GenLSP.Structures.CodeAction{
-          title: "Disable #{check}",
-          edit: %GenLSP.Structures.WorkspaceEdit{
-            changes: %{
-              uri => [
-                %GenLSP.Structures.TextEdit{
-                  new_text: "# credo:disable-for-next-line #{check}\n",
-                  range: %GenLSP.Structures.Range{start: position, end: position}
-                }
-              ]
+        [
+          %GenLSP.Structures.CodeAction{
+            title: "Disable #{check}",
+            edit: %GenLSP.Structures.WorkspaceEdit{
+              changes: %{
+                uri => [
+                  %GenLSP.Structures.TextEdit{
+                    new_text: "# credo:disable-for-next-line #{check}\n",
+                    range: %GenLSP.Structures.Range{start: position, end: position}
+                  }
+                ]
+              }
             }
           }
-        }
+        ] ++ actions_for(check, uri, d)
       end
+      |> List.flatten()
 
     {:reply, code_actions, lsp}
   end
@@ -211,4 +214,29 @@ defmodule CredoLanguageServer do
   defp category_to_severity(:design), do: DiagnosticSeverity.information()
   defp category_to_severity(:consistency), do: DiagnosticSeverity.hint()
   defp category_to_severity(:readability), do: DiagnosticSeverity.hint()
+
+  defp actions_for("Credo.Check.Readability.ModuleDoc", uri, diagnostic) do
+    position = %GenLSP.Structures.Position{
+      line: diagnostic.range.start.line + 1,
+      character: 0
+    }
+
+    [
+      %GenLSP.Structures.CodeAction{
+        title: "Add \"@moduledoc false\"",
+        edit: %GenLSP.Structures.WorkspaceEdit{
+          changes: %{
+            uri => [
+              %GenLSP.Structures.TextEdit{
+                new_text: "  @moduledoc false\n",
+                range: %GenLSP.Structures.Range{start: position, end: position}
+              }
+            ]
+          }
+        }
+      }
+    ]
+  end
+
+  defp actions_for(_check_name, _uri, _diagnostic), do: []
 end
