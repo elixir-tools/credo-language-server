@@ -1,31 +1,29 @@
-name: ci
+name: CI
 
 on:
   push:
-    branches: [main, actions-test]
+    branches: [main]
   pull_request:
-    branches: [main, actions-test]
+    branches: [main]
 
 jobs:
-  build_and_test:
-    name: build and test (Elixir ${{matrix.elixir}} | Erlang/OTP ${{matrix.otp}})
+  test:
+    name: Tests (Elixir ${{matrix.elixir}} | Erlang/OTP ${{matrix.otp}})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - elixir: 1.12.x
-            otp: 24.x
-          - elixir: 1.13.x
-            otp: 24.x
-          - elixir: 1.14.x
-            otp: 24.x
-          - elixir: 1.13.x
-            otp: 25.x
-          - elixir: 1.14.x
-            otp: 25.x
-    env:
-      MIX_ENV: test
+        otp: [23.x, 24.x, 25.x]
+        elixir: [1.10.x, 1.11.x, 1.12.x, 1.13.x, 1.14.x]
+        exclude:
+          - otp: 25.x
+            elixir: 1.11.x
+          - otp: 25.x
+            elixir: 1.12.x
+          - otp: 25.x
+            elixir: 1.10.x
+          - otp: 24.x
+            elixir: 1.10.x
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
@@ -33,11 +31,21 @@ jobs:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
 
+      - uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
+
       - name: Install Dependencies
         run: |
-          mix local.hex --force
-          mix local.rebar --force
           mix deps.get --only test
 
       - name: Run tests
         run: mix test
+
+      - name: Check formatter
+        run: mix format --check-formatted
