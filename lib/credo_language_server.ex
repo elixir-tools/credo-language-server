@@ -28,6 +28,7 @@ defmodule CredoLanguageServer do
     CodeActionOptions,
     CodeActionParams,
     Diagnostic,
+    DidOpenTextDocumentParams,
     InitializeParams,
     InitializeResult,
     Position,
@@ -35,9 +36,10 @@ defmodule CredoLanguageServer do
     SaveOptions,
     ServerCapabilities,
     TextDocumentIdentifier,
+    TextDocumentItem,
     TextDocumentSyncOptions,
-    DidOpenTextDocumentParams,
-    TextDocumentItem
+    WorkDoneProgressBegin,
+    WorkDoneProgressEnd
   }
 
   alias CredoLanguageServer.Cache, as: Diagnostics
@@ -57,6 +59,23 @@ defmodule CredoLanguageServer do
 
   @impl true
   def handle_request(%Initialize{params: %InitializeParams{root_uri: root_uri}}, lsp) do
+    # GenLSP.request_server(lsp.pid, %GenLSP.Requests.WindowWorkDoneProgressCreate{
+    #   id: "12345",
+    #   params: %WorkDoneProgressCreateParams{
+    #     token: "12345"
+    #   }
+    # })
+
+    GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
+      params: %GenLSP.Structures.ProgressParams{
+        token: "12345",
+        value: %WorkDoneProgressBegin{
+          kind: "begin",
+          title: "Credo Language Server"
+        }
+      }
+    })
+
     {:reply,
      %InitializeResult{
        capabilities: %ServerCapabilities{
@@ -65,7 +84,9 @@ defmodule CredoLanguageServer do
            save: %SaveOptions{include_text: true},
            change: TextDocumentSyncKind.full()
          },
-         code_action_provider: %CodeActionOptions{code_action_kinds: [CodeActionKind.quick_fix()]}
+         code_action_provider: %CodeActionOptions{
+           code_action_kinds: [CodeActionKind.quick_fix()]
+         }
        },
        server_info: %{name: "Credo"}
      }, assign(lsp, root_uri: root_uri)}
@@ -113,6 +134,16 @@ defmodule CredoLanguageServer do
   @impl true
   def handle_notification(%Initialized{}, lsp) do
     GenLSP.log(lsp, "[Credo] LSP Initialized!")
+
+    GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
+      params: %GenLSP.Structures.ProgressParams{
+        token: "12345",
+        value: %WorkDoneProgressEnd{
+          kind: "end"
+        }
+      }
+    })
+
     refresh(lsp)
     publish(lsp)
 
