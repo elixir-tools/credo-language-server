@@ -1,5 +1,7 @@
 # credo-language-server
 
+[![Hex.pm](https://img.shields.io/hexpm/v/credo_language_server)](https://hex.pm/packages/credo_language_server)
+
 credo-langauge-server is an LSP implementation for Credo.
 
 ## Features
