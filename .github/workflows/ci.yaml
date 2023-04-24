@@ -8,13 +8,14 @@ on:
 
 jobs:
   test:
-    name: Tests (Elixir ${{matrix.elixir}} | Erlang/OTP ${{matrix.otp}})
+    name: Tests (Elixir ${{matrix.elixir}} | Erlang/OTP ${{matrix.otp}} | Credo ${{matrix.credo}})
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         otp: [23.x, 24.x, 25.x]
         elixir: [1.10.x, 1.11.x, 1.12.x, 1.13.x, 1.14.x]
+        credo: [1.0.5, 1.1.5, 1.2.3, 1.3.1, 1.4.1, 1.5.6, 1.6.7, 1.7.0]
         exclude:
           - otp: 25.x
             elixir: 1.11.x
@@ -37,9 +38,12 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ matrix.credo }}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
+            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ matrix.credo }}-
+
+      - name: Set credo version
+        run: sed -i -e "s/{:credo, \"~> \(.*\)\"}/{:credo, \"~> ${{ matrix.credo }}\"}/" mix.exs
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
