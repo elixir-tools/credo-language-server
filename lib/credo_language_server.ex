@@ -59,16 +59,11 @@ defmodule CredoLanguageServer do
 
   @impl true
   def handle_request(%Initialize{params: %InitializeParams{root_uri: root_uri}}, lsp) do
-    # GenLSP.request_server(lsp.pid, %GenLSP.Requests.WindowWorkDoneProgressCreate{
-    #   id: "12345",
-    #   params: %WorkDoneProgressCreateParams{
-    #     token: "12345"
-    #   }
-    # })
+    token = generate_token(8)
 
     GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
       params: %GenLSP.Structures.ProgressParams{
-        token: "12345",
+        token: token,
         value: %WorkDoneProgressBegin{
           kind: "begin",
           title: "Credo Language Server"
@@ -89,7 +84,7 @@ defmodule CredoLanguageServer do
          }
        },
        server_info: %{name: "Credo"}
-     }, assign(lsp, root_uri: root_uri)}
+     }, assign(lsp, root_uri: root_uri, init_token: token)}
   end
 
   def handle_request(
@@ -137,7 +132,7 @@ defmodule CredoLanguageServer do
 
     GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
       params: %GenLSP.Structures.ProgressParams{
-        token: "12345",
+        token: lsp.assigns.init_token,
         value: %WorkDoneProgressEnd{
           kind: "end"
         }
@@ -245,4 +240,11 @@ defmodule CredoLanguageServer do
   defp category_to_severity(:design), do: DiagnosticSeverity.information()
   defp category_to_severity(:consistency), do: DiagnosticSeverity.hint()
   defp category_to_severity(:readability), do: DiagnosticSeverity.hint()
+
+  defp generate_token(length) do
+    length
+    |> :crypto.strong_rand_bytes()
+    |> Base.url_encode64(padding: false)
+    |> binary_part(0, length)
+  end
 end
