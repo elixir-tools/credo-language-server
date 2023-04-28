@@ -4,6 +4,8 @@ defmodule CredoLanguageServer do
   """
   use GenLSP
 
+  require OpenTelemetry.Tracer, as: Tracer
+
   alias GenLSP.Enumerations.{CodeActionKind, TextDocumentSyncKind, DiagnosticSeverity}
 
   alias GenLSP.Notifications.{
@@ -40,25 +42,31 @@ defmodule CredoLanguageServer do
 
   @impl true
   def init(lsp, args) do
-    cache = Keyword.fetch!(args, :cache)
+    Tracer.with_span :init, %{} do
+      cache = Keyword.fetch!(args, :cache)
 
-    {:ok, assign(lsp, exit_code: 1, cache: cache)}
+      {:ok, assign(lsp, exit_code: 1, cache: cache)}
+    end
   end
 
   @impl true
   def handle_request(%Initialize{params: %InitializeParams{root_uri: root_uri}}, lsp) do
-    {:reply,
-     %InitializeResult{
-       capabilities: %ServerCapabilities{
-         text_document_sync: %TextDocumentSyncOptions{
-           open_close: true,
-           save: %SaveOptions{include_text: true},
-           change: TextDocumentSyncKind.full()
+    Tracer.with_span :initialize, %{} do
+      {:reply,
+       %InitializeResult{
+         capabilities: %ServerCapabilities{
+           text_document_sync: %TextDocumentSyncOptions{
+             open_close: true,
+             save: %SaveOptions{include_text: true},
+             change: TextDocumentSyncKind.full()
+           },
+           code_action_provider: %CodeActionOptions{
+             code_action_kinds: [CodeActionKind.quick_fix()]
+           }
          },
-         code_action_provider: %CodeActionOptions{code_action_kinds: [CodeActionKind.quick_fix()]}
-       },
-       server_info: %{name: "Credo"}
-     }, assign(lsp, root_uri: root_uri)}
+         server_info: %{name: "Credo"}
+       }, assign(lsp, root_uri: root_uri)}
+    end
   end
 
   def handle_request(
@@ -70,90 +78,120 @@ defmodule CredoLanguageServer do
         },
         lsp
       ) do
-    code_actions =
-      for %GenLSP.Structures.Diagnostic{} = d <- diagnostics do
-        check =
-          d.data["check"]
-          |> to_string()
-          |> String.replace("Elixir.", "")
+    Tracer.with_span :code_action, %{} do
+      code_actions =
+        for %GenLSP.Structures.Diagnostic{} = d <- diagnostics do
+          check =
+            d.data["check"]
+            |> to_string()
+            |> String.replace("Elixir.", "")
 
-        position = %GenLSP.Structures.Position{
-          line: d.range.start.line,
-          character: 0
-        }
+          position = %GenLSP.Structures.Position{
+            line: d.range.start.line,
+            character: 0
+          }
 
-        %GenLSP.Structures.CodeAction{
-          title: "Disable #{check}",
-          edit: %GenLSP.Structures.WorkspaceEdit{
-            changes: %{
-              uri => [
-                %GenLSP.Structures.TextEdit{
-                  new_text: "# credo:disable-for-next-line #{check}\n",
-                  range: %GenLSP.Structures.Range{start: position, end: position}
-                }
-              ]
+          %GenLSP.Structures.CodeAction{
+            title: "Disable #{check}",
+            edit: %GenLSP.Structures.WorkspaceEdit{
+              changes: %{
+                uri => [
+                  %GenLSP.Structures.TextEdit{
+                    new_text: "# credo:disable-for-next-line #{check}\n",
+                    range: %GenLSP.Structures.Range{start: position, end: position}
+                  }
+                ]
+              }
             }
           }
-        }
-      end
+        end
 
-    {:reply, code_actions, lsp}
+      {:reply, code_actions, lsp}
+    end
   end
 
   def handle_request(%Shutdown{}, lsp) do
-    {:noreply, assign(lsp, exit_code: 0)}
+    Tracer.with_span :shutdown, %{} do
+      {:noreply, assign(lsp, exit_code: 0)}
+    end
   end
 
   @impl true
   def handle_notification(%Initialized{}, lsp) do
-    GenLSP.log(lsp, "[Credo] LSP Initialized!")
-    refresh(lsp)
-    publish(lsp)
+    Tracer.with_span :initialized, %{} do
+      ctx = Tracer.current_span_ctx()
+      # GenLSP.log(lsp, "[Credo] LSP Initialized!")
 
-    {:noreply, lsp}
+      Task.start_link(fn ->
+        Tracer.set_current_span(ctx)
+        # refresh(lsp)
+        # publish(lsp)
+      end)
+
+      {:noreply, lsp}
+    end
   end
 
   def handle_notification(%TextDocumentDidSave{}, lsp) do
-    Task.start_link(fn ->
-      Diagnostics.clear(lsp.assigns.cache)
-      refresh(lsp)
-      publish(lsp)
-    end)
+    Tracer.with_span :"textDocument/didSave", %{} do
+      ctx = Tracer.current_span_ctx()
 
-    {:noreply, lsp}
+
+      Task.start_link(fn ->
+        Tracer.set_current_span(ctx)
+        Diagnostics.clear(lsp.assigns.cache)
+        refresh(lsp)
+        publish(lsp)
+      end)
+
+      {:noreply, lsp}
+    end
   end
 
   def handle_notification(%TextDocumentDidChange{}, lsp) do
-    Task.start_link(fn ->
-      Diagnostics.clear(lsp.assigns.cache)
-      publish(lsp)
-    end)
+    Tracer.with_span :"textDocument/didChange", %{} do
+      ctx = Tracer.current_span_ctx()
 
-    {:noreply, lsp}
+      Task.start_link(fn ->
+        Tracer.set_current_span(ctx)
+        Diagnostics.clear(lsp.assigns.cache)
+        publish(lsp)
+      end)
+
+      {:noreply, lsp}
+    end
   end
 
-  def handle_notification(%note{}, lsp)
+  def handle_notification(%note{method: method}, lsp)
       when note in [TextDocumentDidOpen, TextDocumentDidClose] do
-    {:noreply, lsp}
+    Tracer.with_span :"#{method}", %{} do
+      {:noreply, lsp}
+    end
   end
 
   def handle_notification(%Exit{}, lsp) do
-    System.halt(lsp.assigns.exit_code)
+    Tracer.with_span :exit, %{} do
+      System.halt(lsp.assigns.exit_code)
 
-    {:noreply, lsp}
+      {:noreply, lsp}
+    end
   end
 
-  def handle_notification(_thing, lsp) do
-    {:noreply, lsp}
+  def handle_notification(%{method: method} = _thing, lsp) do
+    Tracer.with_span :"#{method}", %{} do
+      {:noreply, lsp}
+    end
   end
 
   defp refresh(lsp) do
     dir = URI.parse(lsp.assigns.root_uri).path
 
     issues =
-      ["--strict", "--all", "--working-dir", dir]
-      |> Credo.run()
-      |> Credo.Execution.get_issues()
+      Tracer.with_span :"credo.get_issues", %{} do
+        ["--strict", "--all", "--working-dir", dir]
+        |> Credo.run()
+        |> Credo.Execution.get_issues()
+      end
 
     GenLSP.info(lsp, "[Credo] Found #{Enum.count(issues)} issues")
 
