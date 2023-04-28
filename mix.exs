@@ -24,10 +24,16 @@ defmodule CredoLanguageServer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:gen_lsp, "~> 0.0.10"},
-      # {:gen_lsp, path: "../gen_lsp"},
+      # {:gen_lsp, "~> 0.0.10"},
+      {:gen_lsp, path: "../gen_lsp"},
       {:credo, "~> 1.0"},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      # {:schematic, path: "../schematic", override: true},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:opentelemetry_api, "~> 1.2", only: [:dev, :test]},
+      {:opentelemetry, "~> 1.2", only: [:dev, :test]},
+      {:opentelemetry_exporter, "~> 1.4", only: [:dev, :test]},
+      {:opentelemetry_telemetry, "~> 1.0", only: [:dev, :test]},
+      {:opentelemetry_process_propagator, "~> 0.2.2", only: [:dev, :test]}
     ]
   end
 
