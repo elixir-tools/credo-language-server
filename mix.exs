@@ -25,7 +25,8 @@ defmodule CredoLanguageServer.MixProject do
   defp deps do
     [
       # {:gen_lsp, "~> 0.0.10"},
-      {:gen_lsp, path: "../gen_lsp"},
+      # {:gen_lsp, path: "../gen_lsp"},
+      {:gen_lsp, github: "elixir-tools/gen_lsp", branch: "mh/telemetry"},
       {:credo, "~> 1.0"},
       # {:schematic, path: "../schematic", override: true},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
