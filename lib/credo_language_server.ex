@@ -4,7 +4,14 @@ defmodule CredoLanguageServer do
   """
   use GenLSP
 
-  alias GenLSP.Enumerations.{CodeActionKind, TextDocumentSyncKind, DiagnosticSeverity}
+  alias GenLSP.ErrorResponse
+
+  alias GenLSP.Enumerations.{
+    CodeActionKind,
+    DiagnosticSeverity,
+    ErrorCodes,
+    TextDocumentSyncKind
+  }
 
   alias GenLSP.Notifications.{
     Exit,
@@ -18,12 +25,12 @@ defmodule CredoLanguageServer do
   alias GenLSP.Requests.{Initialize, Shutdown, TextDocumentCodeAction}
 
   alias GenLSP.Structures.{
-    Diagnostic,
-    Position,
-    Range,
     CodeActionOptions,
+    Diagnostic,
     InitializeParams,
     InitializeResult,
+    Position,
+    Range,
     SaveOptions,
     ServerCapabilities,
     TextDocumentIdentifier,
@@ -102,6 +109,16 @@ defmodule CredoLanguageServer do
 
   def handle_request(%Shutdown{}, lsp) do
     {:noreply, assign(lsp, exit_code: 0)}
+  end
+
+  def handle_request(%{method: method}, lsp) do
+    GenLSP.warning(lsp, "[Credo] Method Not Found: #{method}")
+
+    {:reply,
+     %ErrorResponse{
+       code: ErrorCodes.method_not_found(),
+       message: "Method Not Found: #{method}"
+     }, lsp}
   end
 
   @impl true

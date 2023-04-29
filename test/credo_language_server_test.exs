@@ -27,36 +27,60 @@ defmodule CredoLanguageServerTest do
     assert alive?(server)
   end
 
+  test "returns method not found for unimplemented requests", %{client: client} do
+    id = System.unique_integer([:positive])
+    assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
+
+    assert :ok ==
+             request(client, %{
+               method: "textDocument/documentSymbol",
+               id: id,
+               jsonrpc: "2.0",
+               params: %{
+                 textDocument: %{
+                   uri: "file://file/doesnt/matter.ex"
+                 }
+               }
+             })
+
+    assert_notification "window/logMessage",
+                        %{
+                          "message" => "[Credo] Method Not Found: textDocument/documentSymbol",
+                          "type" => 2
+                        },
+                        500
+
+    assert_error ^id,
+                 %{
+                   "code" => -32601,
+                   "message" => "Method Not Found: textDocument/documentSymbol"
+                 },
+                 500
+  end
+
   test "can initialize the server" do
-    assert_result(
-      1,
-      %{
-        "capabilities" => %{
-          "textDocumentSync" => %{
-            "openClose" => true,
-            "save" => %{
-              "includeText" => true
-            },
-            "change" => 1
-          }
-        },
-        "serverInfo" => %{"name" => "Credo"}
-      },
-      500
-    )
+    assert_result 1,
+                  %{
+                    "capabilities" => %{
+                      "textDocumentSync" => %{
+                        "openClose" => true,
+                        "save" => %{
+                          "includeText" => true
+                        },
+                        "change" => 1
+                      }
+                    },
+                    "serverInfo" => %{"name" => "Credo"}
+                  },
+                  500
   end
 
   test "publishes diagnostics once the client has initialized", %{client: client, cwd: cwd} do
     assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
 
-    assert_notification(
-      "window/logMessage",
-      %{
-        "message" => "[Credo] LSP Initialized!",
-        "type" => 4
-      },
-      500
-    )
+    assert_notification "window/logMessage",
+                        %{"message" => "[Credo] LSP Initialized!", "type" => 4},
+                        500
 
     for file <- ["foo.ex", "bar.ex"] do
       uri =
@@ -66,11 +90,9 @@ defmodule CredoLanguageServerTest do
           path: Path.join([cwd, "test/support/fixtures/lib", file])
         })
 
-      assert_notification(
-        "textDocument/publishDiagnostics",
-        %{"uri" => ^uri, "diagnostics" => [%{"severity" => 4}]},
-        500
-      )
+      assert_notification "textDocument/publishDiagnostics",
+                          %{"uri" => ^uri, "diagnostics" => [%{"severity" => 4}]},
+                          500
     end
   end
 
@@ -84,11 +106,9 @@ defmodule CredoLanguageServerTest do
         path: Path.join([cwd, "test/support/fixtures/lib", "foo.ex"])
       })
 
-    assert_notification(
-      "textDocument/publishDiagnostics",
-      %{"uri" => ^uri, "diagnostics" => [%{"severity" => 4} = diagnostic]},
-      500
-    )
+    assert_notification "textDocument/publishDiagnostics",
+                        %{"uri" => ^uri, "diagnostics" => [%{"severity" => 4} = diagnostic]},
+                        500
 
     assert :ok ==
              request(client, %{
@@ -102,29 +122,27 @@ defmodule CredoLanguageServerTest do
                }
              })
 
-    assert_result(
-      2,
-      [
-        %{
-          "data" => nil,
-          "edit" => %{
-            "changes" => %{
-              ^uri => [
-                %{
-                  "newText" =>
-                    "# credo:disable-for-next-line Credo.Check.Readability.ModuleDoc\n",
-                  "range" => %{
-                    "end" => %{"character" => 0, "line" => 0},
-                    "start" => %{"character" => 0, "line" => 0}
-                  }
-                }
-              ]
-            }
-          },
-          "title" => "Disable Credo.Check.Readability.ModuleDoc"
-        }
-      ],
-      500
-    )
+    assert_result 2,
+                  [
+                    %{
+                      "data" => nil,
+                      "edit" => %{
+                        "changes" => %{
+                          ^uri => [
+                            %{
+                              "newText" =>
+                                "# credo:disable-for-next-line Credo.Check.Readability.ModuleDoc\n",
+                              "range" => %{
+                                "end" => %{"character" => 0, "line" => 0},
+                                "start" => %{"character" => 0, "line" => 0}
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "title" => "Disable Credo.Check.Readability.ModuleDoc"
+                    }
+                  ],
+                  500
   end
 end
