@@ -10,7 +10,7 @@ defmodule CredoLanguageServer.MixProject do
       start_permanent: Mix.env() == :prod,
       package: package(),
       deps: deps(),
-      lockfile: System.get_env("LOCKFILE", "mix.lock")
+      lockfile: System.get_env("CREDO_LOCKFILE", "mix.lock")
     ]
   end
 

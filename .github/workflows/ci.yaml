@@ -40,12 +40,9 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ matrix.credo }}-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles(env.CREDO_LOCKFILE) }}
           restore-keys: |
-            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ matrix.credo }}-
-
-      - name: Set credo version
-        run: sed -i -e "s/{:credo, \"~> \(.*\)\"}/{:credo, \"~> ${{ matrix.credo }}\"}/" mix.exs
+            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
