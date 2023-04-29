@@ -9,7 +9,8 @@ defmodule CredoLanguageServer.MixProject do
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       package: package(),
-      deps: deps()
+      deps: deps(),
+      lockfile: System.get_env("CREDO_LOCKFILE", "mix.lock")
     ]
   end
 

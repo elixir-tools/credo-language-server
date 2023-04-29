@@ -8,13 +8,14 @@ on:
 
 jobs:
   test:
-    name: Tests (Elixir ${{matrix.elixir}} | Erlang/OTP ${{matrix.otp}})
+    name: Tests (Elixir ${{matrix.elixir}} | Erlang/OTP ${{matrix.otp}} | Credo ${{matrix.credo}})
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
         otp: [23.x, 24.x, 25.x]
         elixir: [1.10.x, 1.11.x, 1.12.x, 1.13.x, 1.14.x]
+        credo: [1.5.6, 1.6.7, 1.7.0]
         exclude:
           - otp: 25.x
             elixir: 1.11.x
@@ -24,6 +25,8 @@ jobs:
             elixir: 1.10.x
           - otp: 24.x
             elixir: 1.10.x
+    env:
+      LOCKFILE: lockfiles/mix-credo-${{matrix.credo}}.lock
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
@@ -37,7 +40,7 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles(env.CREDO_LOCKFILE) }}
           restore-keys: |
             ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
 
