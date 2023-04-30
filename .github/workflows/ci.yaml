@@ -26,7 +26,7 @@ jobs:
           - otp: 24.x
             elixir: 1.10.x
     env:
-      LOCKFILE: lockfiles/mix-credo-${{matrix.credo}}.lock
+      CREDO_LOCKFILE: lockfiles/mix-credo-${{matrix.credo}}.lock
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
