@@ -30,7 +30,7 @@ defmodule CredoLanguageServer.CodeAction.ModuleDocFalse do
     indent =
       text
       |> Enum.at(start.line)
-      |> then(&Regex.run(~r/^(\s*).*/, &1))
+      |> (&Regex.run(~r/^(\s*).*/, &1)).()
       |> List.last()
       |> Kernel.<>("  ")
 
