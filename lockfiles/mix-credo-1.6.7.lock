@@ -11,6 +11,7 @@
   "makeup_erlang": {:hex, :makeup_erlang, "0.1.1", "3fcb7f09eb9d98dc4d208f49cc955a34218fc41ff6b84df7c75b3e6e533cc65f", [:mix], [{:makeup, "~> 1.0", [hex: :makeup, repo: "hexpm", optional: false]}], "hexpm", "174d0809e98a4ef0b3309256cbf97101c6ec01c4ab0b23e926a9e17df2077cbb"},
   "nimble_options": {:hex, :nimble_options, "1.0.1", "b448018287b22584e91b5fd9c6c0ad717cb4bcdaa457957c8d57770f56625c43", [:mix], [], "hexpm", "078b2927cd9f84555be6386d56e849b0c555025ecccf7afee00ab6a9e6f63837"},
   "nimble_parsec": {:hex, :nimble_parsec, "1.3.0", "9e18a119d9efc3370a3ef2a937bf0b24c088d9c4bf0ba9d7c3751d49d347d035", [:mix], [], "hexpm", "7977f183127a7cbe9346981e2f480dc04c55ffddaef746bd58debd566070eef8"},
-  "schematic": {:hex, :schematic, "0.0.9", "27cdda55a4fab2ab031889cf7693c9c3f4837f490d48cccca30f7504281bf15d", [:mix], [], "hexpm", "dae91152218e64d5a119ba0524737dff25f3495400ce532d7d4da4a3ce56e0f8"},
+  "schematic": {:hex, :schematic, "0.0.11", "fa583fb1119e78cfb95d5dabf1c5e5457b24ff4833df2861befc4278de291901", [:mix], [{:telemetry, "~> 0.4 or ~> 1.0", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "d70da434fc73f0c6079b5a0dfd42db9754d9a55acd40fc24776a2c18118fca88"},
+  "telemetry": {:hex, :telemetry, "1.2.1", "68fdfe8d8f05a8428483a97d7aab2f268aaff24b49e0f599faa091f1d4e7f61c", [:rebar3], [], "hexpm", "dad9ce9d8effc621708f99eac538ef1cbe05d6a874dd741de2e689c47feafed5"},
   "typed_struct": {:hex, :typed_struct, "0.3.0", "939789e3c1dca39d7170c87f729127469d1315dcf99fee8e152bb774b17e7ff7", [:mix], [], "hexpm", "c50bd5c3a61fe4e198a8504f939be3d3c85903b382bde4865579bc23111d1b6d"},
 }
