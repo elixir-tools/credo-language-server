@@ -51,7 +51,7 @@ jobs:
       - name: Run tests
         run: mix test
 
-  formatter:
+  lint:
     runs-on: ubuntu-latest
     name: Formatter (1.14.x.x/25.x)
     steps:
@@ -76,3 +76,6 @@ jobs:
 
       - name: Run Formatter
         run: mix format --check-formatted
+
+      - name: Credo
+        run: mix credo
