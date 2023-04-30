@@ -9,5 +9,5 @@
     request: 2
   ],
   import_deps: [:gen_lsp],
-  inputs: ["{mix,.formatter}.exs", "{config,lib,test,}/**/*.{ex,exs}"]
+  inputs: [".credo.exs", "{mix,.formatter}.exs", "{config,lib,test,}/**/*.{ex,exs}"]
 ]

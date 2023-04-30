@@ -17,7 +17,6 @@ defmodule CredoLanguageServer do
     Exit,
     Initialized,
     TextDocumentDidChange,
-    TextDocumentDidClose,
     TextDocumentDidOpen,
     TextDocumentDidSave
   }
@@ -25,7 +24,9 @@ defmodule CredoLanguageServer do
   alias GenLSP.Requests.{Initialize, Shutdown, TextDocumentCodeAction}
 
   alias GenLSP.Structures.{
+    CodeActionContext,
     CodeActionOptions,
+    CodeActionParams,
     Diagnostic,
     InitializeParams,
     InitializeResult,
@@ -34,7 +35,9 @@ defmodule CredoLanguageServer do
     SaveOptions,
     ServerCapabilities,
     TextDocumentIdentifier,
-    TextDocumentSyncOptions
+    TextDocumentSyncOptions,
+    DidOpenTextDocumentParams,
+    TextDocumentItem
   }
 
   alias CredoLanguageServer.Cache, as: Diagnostics
@@ -49,7 +52,7 @@ defmodule CredoLanguageServer do
   def init(lsp, args) do
     cache = Keyword.fetch!(args, :cache)
 
-    {:ok, assign(lsp, exit_code: 1, cache: cache)}
+    {:ok, assign(lsp, exit_code: 1, cache: cache, documents: %{})}
   end
 
   @impl true
@@ -70,38 +73,24 @@ defmodule CredoLanguageServer do
 
   def handle_request(
         %TextDocumentCodeAction{
-          params: %GenLSP.Structures.CodeActionParams{
-            context: %GenLSP.Structures.CodeActionContext{diagnostics: diagnostics},
+          params: %CodeActionParams{
+            context: %CodeActionContext{diagnostics: diagnostics},
             text_document: %TextDocumentIdentifier{uri: uri}
           }
         },
         lsp
       ) do
     code_actions =
-      for %GenLSP.Structures.Diagnostic{} = d <- diagnostics do
-        check =
-          d.data["check"]
-          |> to_string()
-          |> String.replace("Elixir.", "")
-
-        position = %GenLSP.Structures.Position{
-          line: d.range.start.line,
-          character: 0
-        }
-
-        %GenLSP.Structures.CodeAction{
-          title: "Disable #{check}",
-          edit: %GenLSP.Structures.WorkspaceEdit{
-            changes: %{
-              uri => [
-                %GenLSP.Structures.TextEdit{
-                  new_text: "# credo:disable-for-next-line #{check}\n",
-                  range: %GenLSP.Structures.Range{start: position, end: position}
-                }
-              ]
-            }
-          }
-        }
+      for %Diagnostic{data: %{"check" => check}} = diagnostic <- diagnostics,
+          check =
+            CredoLanguageServer.Check.new(
+              check: check,
+              diagnostic: diagnostic,
+              uri: uri,
+              document: lsp.assigns.documents[uri]
+            ),
+          action <- CredoLanguageServer.CodeActionable.fetch(check) do
+        action
       end
 
     {:reply, code_actions, lsp}
@@ -130,14 +119,22 @@ defmodule CredoLanguageServer do
     {:noreply, lsp}
   end
 
-  def handle_notification(%TextDocumentDidSave{}, lsp) do
+  def handle_notification(
+        %TextDocumentDidSave{
+          params: %GenLSP.Structures.DidSaveTextDocumentParams{
+            text: text,
+            text_document: %{uri: uri}
+          }
+        },
+        lsp
+      ) do
     Task.start_link(fn ->
       Diagnostics.clear(lsp.assigns.cache)
       refresh(lsp)
       publish(lsp)
     end)
 
-    {:noreply, lsp}
+    {:noreply, put_in(lsp.assigns.documents[uri], String.split(text, "\n"))}
   end
 
   def handle_notification(%TextDocumentDidChange{}, lsp) do
@@ -149,9 +146,15 @@ defmodule CredoLanguageServer do
     {:noreply, lsp}
   end
 
-  def handle_notification(%note{}, lsp)
-      when note in [TextDocumentDidOpen, TextDocumentDidClose] do
-    {:noreply, lsp}
+  def handle_notification(
+        %TextDocumentDidOpen{
+          params: %DidOpenTextDocumentParams{
+            text_document: %TextDocumentItem{text: text, uri: uri}
+          }
+        },
+        lsp
+      ) do
+    {:noreply, put_in(lsp.assigns.documents[uri], String.split(text, "\n"))}
   end
 
   def handle_notification(%Exit{}, lsp) do

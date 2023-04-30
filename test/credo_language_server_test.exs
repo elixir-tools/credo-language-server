@@ -52,7 +52,7 @@ defmodule CredoLanguageServerTest do
 
     assert_error ^id,
                  %{
-                   "code" => -32601,
+                   "code" => -32_601,
                    "message" => "Method Not Found: textDocument/documentSymbol"
                  },
                  500
@@ -96,19 +96,42 @@ defmodule CredoLanguageServerTest do
     end
   end
 
-  test "code actions", %{client: client, cwd: cwd} do
+  test "code actions outer module", %{client: client, cwd: cwd} do
     assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
 
-    uri =
-      to_string(%URI{
-        host: "",
-        scheme: "file",
-        path: Path.join([cwd, "test/support/fixtures/lib", "foo.ex"])
-      })
+    file = %URI{
+      host: "",
+      scheme: "file",
+      path: Path.join([cwd, "test/support/fixtures/lib", "code_action.ex"])
+    }
+
+    uri = to_string(file)
 
     assert_notification "textDocument/publishDiagnostics",
-                        %{"uri" => ^uri, "diagnostics" => [%{"severity" => 4} = diagnostic]},
+                        %{
+                          "uri" => ^uri,
+                          "diagnostics" => diagnostics
+                        },
                         500
+
+    [
+      %{"severity" => 4} = diagnostic,
+      %{"severity" => 4}
+    ] = Enum.sort(diagnostics)
+
+    assert :ok ==
+             notify(client, %{
+               method: "textDocument/didOpen",
+               jsonrpc: "2.0",
+               params: %{
+                 textDocument: %{
+                   languageId: "elixir",
+                   version: 1,
+                   uri: uri,
+                   text: File.read!(file.path)
+                 }
+               }
+             })
 
     assert :ok ==
              request(client, %{
@@ -141,6 +164,113 @@ defmodule CredoLanguageServerTest do
                         }
                       },
                       "title" => "Disable Credo.Check.Readability.ModuleDoc"
+                    },
+                    %{
+                      "data" => nil,
+                      "edit" => %{
+                        "changes" => %{
+                          ^uri => [
+                            %{
+                              "newText" => "@moduledoc false\n  ",
+                              "range" => %{
+                                "end" => %{"character" => 2, "line" => 1},
+                                "start" => %{"character" => 2, "line" => 1}
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "title" => "Add \"@moduledoc false\""
+                    }
+                  ],
+                  500
+  end
+
+  test "code actions inner module", %{client: client, cwd: cwd} do
+    assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
+
+    file = %URI{
+      host: "",
+      scheme: "file",
+      path: Path.join([cwd, "test/support/fixtures/lib", "code_action.ex"])
+    }
+
+    uri = to_string(file)
+
+    assert_notification "textDocument/publishDiagnostics",
+                        %{
+                          "uri" => ^uri,
+                          "diagnostics" => diagnostics
+                        },
+                        500
+
+    assert :ok ==
+             notify(client, %{
+               method: "textDocument/didOpen",
+               jsonrpc: "2.0",
+               params: %{
+                 textDocument: %{
+                   languageId: "elixir",
+                   version: 1,
+                   uri: uri,
+                   text: File.read!(file.path)
+                 }
+               }
+             })
+
+    [
+      %{"severity" => 4},
+      %{"severity" => 4} = diagnostic
+    ] = Enum.sort(diagnostics)
+
+    assert :ok ==
+             request(client, %{
+               method: "textDocument/codeAction",
+               jsonrpc: "2.0",
+               id: 2,
+               params: %{
+                 context: %{diagnostics: [diagnostic]},
+                 textDocument: %{uri: uri},
+                 range: %{start: %{line: 3, character: 2}, end: %{line: 3, character: 2}}
+               }
+             })
+
+    assert_result 2,
+                  [
+                    %{
+                      "data" => nil,
+                      "edit" => %{
+                        "changes" => %{
+                          ^uri => [
+                            %{
+                              "newText" =>
+                                "# credo:disable-for-next-line Credo.Check.Readability.ModuleDoc\n  ",
+                              "range" => %{
+                                "end" => %{"character" => 2, "line" => 3},
+                                "start" => %{"character" => 2, "line" => 3}
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "title" => "Disable Credo.Check.Readability.ModuleDoc"
+                    },
+                    %{
+                      "data" => nil,
+                      "edit" => %{
+                        "changes" => %{
+                          ^uri => [
+                            %{
+                              "newText" => "@moduledoc false\n    ",
+                              "range" => %{
+                                "end" => %{"character" => 4, "line" => 4},
+                                "start" => %{"character" => 4, "line" => 4}
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "title" => "Add \"@moduledoc false\""
                     }
                   ],
                   500
