@@ -110,12 +110,14 @@ defmodule CredoLanguageServerTest do
     assert_notification "textDocument/publishDiagnostics",
                         %{
                           "uri" => ^uri,
-                          "diagnostics" => [
-                            %{"severity" => 4},
-                            %{"severity" => 4} = diagnostic
-                          ]
+                          "diagnostics" => diagnostics
                         },
                         500
+
+    [
+      %{"severity" => 4} = diagnostic,
+      %{"severity" => 4}
+    ] = Enum.sort(diagnostics)
 
     assert :ok ==
              notify(client, %{
@@ -198,10 +200,7 @@ defmodule CredoLanguageServerTest do
     assert_notification "textDocument/publishDiagnostics",
                         %{
                           "uri" => ^uri,
-                          "diagnostics" => [
-                            %{"severity" => 4} = diagnostic,
-                            %{"severity" => 4}
-                          ]
+                          "diagnostics" => diagnostics
                         },
                         500
 
@@ -218,6 +217,11 @@ defmodule CredoLanguageServerTest do
                  }
                }
              })
+
+    [
+      %{"severity" => 4},
+      %{"severity" => 4} = diagnostic
+    ] = Enum.sort(diagnostics)
 
     assert :ok ==
              request(client, %{

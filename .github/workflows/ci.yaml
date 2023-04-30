@@ -15,7 +15,7 @@ jobs:
       matrix:
         otp: [23.x, 24.x, 25.x]
         elixir: [1.10.x, 1.11.x, 1.12.x, 1.13.x, 1.14.x]
-        credo: [1.5.6, 1.6.7, 1.7.0]
+        credo: [1.6.7, 1.7.0]
         exclude:
           - otp: 25.x
             elixir: 1.11.x
