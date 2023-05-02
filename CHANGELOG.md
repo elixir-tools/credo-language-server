@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.0.4
+
+- Now reports progress when checking for issues
+
 ## v0.0.3
 
 - Code Action: Insert `@moduledoc false` to fix `Credo.Check.Readability.ModuleDoc`
