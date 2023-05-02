@@ -194,8 +194,8 @@ defmodule CredoLanguageServer do
 
     {:noreply,
      lsp
-     |> then(&put_in(&1.assigns.documents[uri], String.split(text, "\n")))
-     |> then(&put_in(&1.assigns.refresh_refs[task.ref], token))}
+     |> (&put_in(&1.assigns.documents[uri], String.split(text, "\n"))).()
+     |> (&put_in(&1.assigns.refresh_refs[task.ref], token)).()}
   end
 
   def handle_notification(%TextDocumentDidChange{}, lsp) do
