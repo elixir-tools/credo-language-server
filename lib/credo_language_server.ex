@@ -237,8 +237,6 @@ defmodule CredoLanguageServer do
     Process.demonitor(ref, [:flush])
     {token, refs} = Map.pop(refs, ref)
 
-    dbg()
-
     GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
       params: %GenLSP.Structures.ProgressParams{
         token: token,
