@@ -29,9 +29,11 @@ defmodule CredoLanguageServer.Application do
           end
 
         [
+          {Task.Supervisor, name: CredoLanguageServer.TaskSupervisor},
           {GenLSP.Buffer, buffer_opts},
           {CredoLanguageServer.Cache, [name: :credo_cache]},
-          {CredoLanguageServer, cache: :credo_cache}
+          {CredoLanguageServer,
+           cache: :credo_cache, task_supervisor: CredoLanguageServer.TaskSupervisor}
         ]
       end
 
