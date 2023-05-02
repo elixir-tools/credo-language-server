@@ -4,8 +4,9 @@ defmodule CredoLanguageServerTest do
   import GenLSP.Test
 
   setup do
+    tvisor = start_supervised!(Task.Supervisor)
     cache = start_supervised!(CredoLanguageServer.Cache)
-    server = server(CredoLanguageServer, cache: cache)
+    server = server(CredoLanguageServer, cache: cache, task_supervisor: tvisor)
     client = client(server)
 
     cwd = File.cwd!()
@@ -50,12 +51,14 @@ defmodule CredoLanguageServerTest do
                         },
                         500
 
-    assert_error ^id,
-                 %{
-                   "code" => -32_601,
-                   "message" => "Method Not Found: textDocument/documentSymbol"
-                 },
-                 500
+    assert_error(
+      ^id,
+      %{
+        "code" => -32_601,
+        "message" => "Method Not Found: textDocument/documentSymbol"
+      },
+      500
+    )
   end
 
   test "can initialize the server" do
@@ -82,6 +85,8 @@ defmodule CredoLanguageServerTest do
                         %{"message" => "[Credo] LSP Initialized!", "type" => 4},
                         500
 
+    assert_notification "$/progress", %{"value" => %{"kind" => "begin"}}, 500
+
     for file <- ["foo.ex", "bar.ex"] do
       uri =
         to_string(%URI{
@@ -94,6 +99,26 @@ defmodule CredoLanguageServerTest do
                           %{"uri" => ^uri, "diagnostics" => [%{"severity" => 4}]},
                           500
     end
+
+    uri =
+      to_string(%URI{
+        host: "",
+        scheme: "file",
+        path: Path.join([cwd, "test/support/fixtures/lib", "code_action.ex"])
+      })
+
+    assert_notification "textDocument/publishDiagnostics",
+                        %{
+                          "uri" => ^uri,
+                          "diagnostics" => [%{"severity" => 4}, %{"severity" => 4}]
+                        },
+                        500
+
+    assert_notification "$/progress",
+                        %{
+                          "value" => %{"kind" => "end", "message" => "Found 4 issues"}
+                        },
+                        500
   end
 
   test "code actions outer module", %{client: client, cwd: cwd} do

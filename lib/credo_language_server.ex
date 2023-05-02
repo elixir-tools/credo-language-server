@@ -28,6 +28,7 @@ defmodule CredoLanguageServer do
     CodeActionOptions,
     CodeActionParams,
     Diagnostic,
+    DidOpenTextDocumentParams,
     InitializeParams,
     InitializeResult,
     Position,
@@ -35,15 +36,16 @@ defmodule CredoLanguageServer do
     SaveOptions,
     ServerCapabilities,
     TextDocumentIdentifier,
+    TextDocumentItem,
     TextDocumentSyncOptions,
-    DidOpenTextDocumentParams,
-    TextDocumentItem
+    WorkDoneProgressBegin,
+    WorkDoneProgressEnd
   }
 
   alias CredoLanguageServer.Cache, as: Diagnostics
 
   def start_link(args) do
-    {args, opts} = Keyword.split(args, [:cache])
+    {args, opts} = Keyword.split(args, [:cache, :task_supervisor])
 
     GenLSP.start_link(__MODULE__, args, opts)
   end
@@ -51,8 +53,16 @@ defmodule CredoLanguageServer do
   @impl true
   def init(lsp, args) do
     cache = Keyword.fetch!(args, :cache)
+    task_supervisor = Keyword.fetch!(args, :task_supervisor)
 
-    {:ok, assign(lsp, exit_code: 1, cache: cache, documents: %{})}
+    {:ok,
+     assign(lsp,
+       exit_code: 1,
+       cache: cache,
+       documents: %{},
+       refresh_refs: %{},
+       task_supervisor: task_supervisor
+     )}
   end
 
   @impl true
@@ -65,7 +75,9 @@ defmodule CredoLanguageServer do
            save: %SaveOptions{include_text: true},
            change: TextDocumentSyncKind.full()
          },
-         code_action_provider: %CodeActionOptions{code_action_kinds: [CodeActionKind.quick_fix()]}
+         code_action_provider: %CodeActionOptions{
+           code_action_kinds: [CodeActionKind.quick_fix()]
+         }
        },
        server_info: %{name: "Credo"}
      }, assign(lsp, root_uri: root_uri)}
@@ -113,8 +125,35 @@ defmodule CredoLanguageServer do
   @impl true
   def handle_notification(%Initialized{}, lsp) do
     GenLSP.log(lsp, "[Credo] LSP Initialized!")
-    refresh(lsp)
+
+    token =
+      8
+      |> :crypto.strong_rand_bytes()
+      |> Base.url_encode64(padding: false)
+      |> binary_part(0, 8)
+
+    GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
+      params: %GenLSP.Structures.ProgressParams{
+        token: token,
+        value: %WorkDoneProgressBegin{
+          kind: "begin",
+          title: "Finding issues..."
+        }
+      }
+    })
+
+    count = refresh(lsp)
     publish(lsp)
+
+    GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
+      params: %GenLSP.Structures.ProgressParams{
+        token: token,
+        value: %WorkDoneProgressEnd{
+          kind: "end",
+          message: "Found #{count} issues"
+        }
+      }
+    })
 
     {:noreply, lsp}
   end
@@ -128,17 +167,43 @@ defmodule CredoLanguageServer do
         },
         lsp
       ) do
-    Task.start_link(fn ->
-      Diagnostics.clear(lsp.assigns.cache)
-      refresh(lsp)
-      publish(lsp)
-    end)
+    token =
+      8
+      |> :crypto.strong_rand_bytes()
+      |> Base.url_encode64(padding: false)
+      |> binary_part(0, 8)
 
-    {:noreply, put_in(lsp.assigns.documents[uri], String.split(text, "\n"))}
+    GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
+      params: %GenLSP.Structures.ProgressParams{
+        token: token,
+        value: %WorkDoneProgressBegin{
+          kind: "begin",
+          title: "Credo",
+          message: "Finding issues..."
+        }
+      }
+    })
+
+    task =
+      Task.Supervisor.async_nolink(lsp.assigns.task_supervisor, fn ->
+        Diagnostics.clear(lsp.assigns.cache)
+        count = refresh(lsp)
+        publish(lsp)
+        count
+      end)
+
+    {:noreply,
+     lsp
+     |> (&put_in(&1.assigns.documents[uri], String.split(text, "\n"))).()
+     |> (&put_in(&1.assigns.refresh_refs[task.ref], token)).()}
   end
 
   def handle_notification(%TextDocumentDidChange{}, lsp) do
-    Task.start_link(fn ->
+    for task <- Task.Supervisor.children(lsp.assigns.task_supervisor) do
+      Process.exit(task, :kill)
+    end
+
+    Task.Supervisor.start_child(lsp.assigns.task_supervisor, fn ->
       Diagnostics.clear(lsp.assigns.cache)
       publish(lsp)
     end)
@@ -163,7 +228,45 @@ defmodule CredoLanguageServer do
     {:noreply, lsp}
   end
 
-  def handle_notification(_thing, lsp) do
+  def handle_notification(_notification, lsp) do
+    {:noreply, lsp}
+  end
+
+  def handle_info({ref, count}, %{assigns: %{refresh_refs: refs}} = lsp)
+      when is_map_key(refs, ref) do
+    Process.demonitor(ref, [:flush])
+    {token, refs} = Map.pop(refs, ref)
+
+    GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
+      params: %GenLSP.Structures.ProgressParams{
+        token: token,
+        value: %WorkDoneProgressEnd{
+          kind: "end",
+          message: "Found #{count} issues"
+        }
+      }
+    })
+
+    {:noreply, assign(lsp, refresh_refs: refs)}
+  end
+
+  def handle_info({:DOWN, ref, :process, _pid, _reason}, %{assigns: %{refresh_refs: refs}} = lsp)
+      when is_map_key(refs, ref) do
+    {token, refs} = Map.pop(refs, ref)
+
+    GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
+      params: %GenLSP.Structures.ProgressParams{
+        token: token,
+        value: %WorkDoneProgressEnd{
+          kind: "end"
+        }
+      }
+    })
+
+    {:noreply, assign(lsp, refresh_refs: refs)}
+  end
+
+  def handle_info(_, lsp) do
     {:noreply, lsp}
   end
 
@@ -174,8 +277,6 @@ defmodule CredoLanguageServer do
       ["--strict", "--all", "--working-dir", dir]
       |> Credo.run()
       |> Credo.Execution.get_issues()
-
-    GenLSP.info(lsp, "[Credo] Found #{Enum.count(issues)} issues")
 
     for issue <- issues do
       diagnostic = %Diagnostic{
@@ -196,6 +297,8 @@ defmodule CredoLanguageServer do
 
       Diagnostics.put(lsp.assigns.cache, Path.absname(issue.filename), diagnostic)
     end
+
+    Enum.count(issues)
   end
 
   defp publish(lsp) do
