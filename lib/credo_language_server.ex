@@ -109,7 +109,7 @@ defmodule CredoLanguageServer do
   end
 
   def handle_request(%Shutdown{}, lsp) do
-    {:noreply, assign(lsp, exit_code: 0)}
+    {:reply, nil, assign(lsp, exit_code: 0)}
   end
 
   def handle_request(%{method: method}, lsp) do
