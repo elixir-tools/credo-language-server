@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.0.5
+
+- Correctly shut down and do not leave zombie processes #28
+
 ## v0.0.4
 
 - Now reports progress when checking for issues
