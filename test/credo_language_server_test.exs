@@ -28,6 +28,13 @@ defmodule CredoLanguageServerTest do
     assert alive?(server)
   end
 
+  test "responds correctly to a shutdown request", %{client: client} do
+    assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
+    assert :ok == request(client, %{method: "shutdown", id: 2, jsonrpc: "2.0", params: nil})
+
+    assert_result 2, nil
+  end
+
   test "returns method not found for unimplemented requests", %{client: client} do
     id = System.unique_integer([:positive])
     assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
