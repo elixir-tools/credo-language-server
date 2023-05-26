@@ -11,8 +11,45 @@ credo-language-server is an LSP implementation for Credo.
 
 ## Editor Support
 
-- Neovim: [elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim)
-- VSCode: [elixir-tools.vscode](https://github.com/elixir-tools/elixir-tools.vscode)
+### Neovim
+
+[elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim)
+### VSCode
+
+[elixir-tools.vscode](https://github.com/elixir-tools/elixir-tools.vscode)
+
+### Helix
+
+<details>
+<summary>example configuration</summary>
+
+Here is an example configuration for `languages.toml`
+
+```toml
+[[language]]
+name = "elixir"
+scope = "source.elixir"
+injection-regex = "elixir"
+file-types = ["ex", "exs"]
+roots = ["mix.exs"]
+auto-format = false
+diagnostic-severity = "Hint"
+comment-token = "#"
+indent = {tab-width = 2, unit = " "}
+language-servers = ["elixir-ls", "credo"]
+
+[language-server.elixir-ls]
+command = "elixir-ls"
+config = { elixirLS.dialyzerEnabled = true }
+
+[language-server.credo]
+command = "/path/to/executable/credo-language-server"
+args = ["--stdio=true", "--port=999"]
+
+```
+
+</details>
+
 
 ## Installation
 
