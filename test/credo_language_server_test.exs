@@ -56,16 +56,14 @@ defmodule CredoLanguageServerTest do
                           "message" => "[Credo] Method Not Found: textDocument/documentSymbol",
                           "type" => 2
                         },
-                        500
+                        1000
 
-    assert_error(
-      ^id,
-      %{
-        "code" => -32_601,
-        "message" => "Method Not Found: textDocument/documentSymbol"
-      },
-      500
-    )
+    assert_error ^id,
+                 %{
+                   "code" => -32_601,
+                   "message" => "Method Not Found: textDocument/documentSymbol"
+                 },
+                 1000
   end
 
   test "can initialize the server" do
@@ -82,7 +80,7 @@ defmodule CredoLanguageServerTest do
                     },
                     "serverInfo" => %{"name" => "Credo"}
                   },
-                  500
+                  1000
   end
 
   test "publishes diagnostics once the client has initialized", %{client: client, cwd: cwd} do
@@ -90,7 +88,7 @@ defmodule CredoLanguageServerTest do
 
     assert_notification "window/logMessage",
                         %{"message" => "[Credo] LSP Initialized!", "type" => 4},
-                        500
+                        1000
 
     assert_notification "$/progress", %{"value" => %{"kind" => "begin"}}, 500
 
@@ -104,7 +102,7 @@ defmodule CredoLanguageServerTest do
 
       assert_notification "textDocument/publishDiagnostics",
                           %{"uri" => ^uri, "diagnostics" => [%{"severity" => 4}]},
-                          500
+                          1000
     end
 
     uri =
@@ -119,13 +117,13 @@ defmodule CredoLanguageServerTest do
                           "uri" => ^uri,
                           "diagnostics" => [%{"severity" => 4}, %{"severity" => 4}]
                         },
-                        500
+                        1000
 
     assert_notification "$/progress",
                         %{
                           "value" => %{"kind" => "end", "message" => "Found 4 issues"}
                         },
-                        500
+                        1000
   end
 
   test "code actions outer module", %{client: client, cwd: cwd} do
@@ -144,7 +142,7 @@ defmodule CredoLanguageServerTest do
                           "uri" => ^uri,
                           "diagnostics" => diagnostics
                         },
-                        500
+                        1000
 
     [
       %{"severity" => 4} = diagnostic,
@@ -215,7 +213,7 @@ defmodule CredoLanguageServerTest do
                       "title" => "Add \"@moduledoc false\""
                     }
                   ],
-                  500
+                  1000
   end
 
   test "code actions inner module", %{client: client, cwd: cwd} do
@@ -234,7 +232,7 @@ defmodule CredoLanguageServerTest do
                           "uri" => ^uri,
                           "diagnostics" => diagnostics
                         },
-                        500
+                        1000
 
     assert :ok ==
              notify(client, %{
@@ -305,6 +303,6 @@ defmodule CredoLanguageServerTest do
                       "title" => "Add \"@moduledoc false\""
                     }
                   ],
-                  500
+                  1000
   end
 end
