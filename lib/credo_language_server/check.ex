@@ -37,7 +37,12 @@ defmodule CredoLanguageServer.Check do
       ]
     end
 
-    def fetch(%{check: check, diagnostic: diagnostic, uri: uri, document: document}) do
+    def fetch(%{
+          check: check,
+          diagnostic: diagnostic,
+          uri: uri,
+          document: document
+        }) do
       [
         CodeAction.DisableCheck.new(
           uri: uri,

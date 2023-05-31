@@ -14,7 +14,7 @@ defmodule CredoLanguageServer.Cache do
 
   def put(cache, filename, diagnostic) do
     Agent.update(cache, fn cache ->
-      Map.update(cache, Path.absname(filename), [diagnostic], fn v ->
+      Map.update(cache, filename, [diagnostic], fn v ->
         [diagnostic | v]
       end)
     end)

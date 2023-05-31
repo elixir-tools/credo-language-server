@@ -4,14 +4,24 @@ defmodule CredoLanguageServerTest do
   import GenLSP.Test
 
   setup do
-    tvisor = start_supervised!(Task.Supervisor)
-    cache = start_supervised!(CredoLanguageServer.Cache)
-    server = server(CredoLanguageServer, cache: cache, task_supervisor: tvisor)
-    client = client(server)
-
     cwd = File.cwd!()
 
-    root_path = Path.join(cwd, "test/support/fixtures")
+    root_path = Path.join(cwd, "test/support/project")
+
+    tvisor = start_supervised!(Task.Supervisor)
+    cache = start_supervised!(CredoLanguageServer.Cache)
+
+    runtime =
+      start_supervised!({CredoLanguageServer.Runtime, working_dir: root_path})
+
+    server =
+      server(CredoLanguageServer,
+        cache: cache,
+        task_supervisor: tvisor,
+        runtime: runtime
+      )
+
+    client = client(server)
 
     assert :ok ==
              request(client, %{
@@ -29,15 +39,35 @@ defmodule CredoLanguageServerTest do
   end
 
   test "responds correctly to a shutdown request", %{client: client} do
-    assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
-    assert :ok == request(client, %{method: "shutdown", id: 2, jsonrpc: "2.0", params: nil})
+    assert :ok ==
+             notify(client, %{
+               method: "initialized",
+               jsonrpc: "2.0",
+               params: %{}
+             })
+
+    assert :ok ==
+             request(client, %{
+               method: "shutdown",
+               id: 2,
+               jsonrpc: "2.0",
+               params: nil
+             })
 
     assert_result 2, nil, 1000
   end
 
-  test "returns method not found for unimplemented requests", %{client: client} do
+  test "returns method not found for unimplemented requests", %{
+    client: client
+  } do
     id = System.unique_integer([:positive])
-    assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
+
+    assert :ok ==
+             notify(client, %{
+               method: "initialized",
+               jsonrpc: "2.0",
+               params: %{}
+             })
 
     assert :ok ==
              request(client, %{
@@ -53,7 +83,8 @@ defmodule CredoLanguageServerTest do
 
     assert_notification "window/logMessage",
                         %{
-                          "message" => "[Credo] Method Not Found: textDocument/documentSymbol",
+                          "message" =>
+                            "[Credo] Method Not Found: textDocument/documentSymbol",
                           "type" => 2
                         },
                         1000
@@ -83,8 +114,16 @@ defmodule CredoLanguageServerTest do
                   1000
   end
 
-  test "publishes diagnostics once the client has initialized", %{client: client, cwd: cwd} do
-    assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
+  test "publishes diagnostics once the client has initialized", %{
+    client: client,
+    cwd: cwd
+  } do
+    assert :ok ==
+             notify(client, %{
+               method: "initialized",
+               jsonrpc: "2.0",
+               params: %{}
+             })
 
     assert_notification "window/logMessage",
                         %{"message" => "[Credo] LSP Initialized!", "type" => 4},
@@ -97,7 +136,7 @@ defmodule CredoLanguageServerTest do
         to_string(%URI{
           host: "",
           scheme: "file",
-          path: Path.join([cwd, "test/support/fixtures/lib", file])
+          path: Path.join([cwd, "test/support/project/lib", file])
         })
 
       assert_notification "textDocument/publishDiagnostics",
@@ -109,30 +148,41 @@ defmodule CredoLanguageServerTest do
       to_string(%URI{
         host: "",
         scheme: "file",
-        path: Path.join([cwd, "test/support/fixtures/lib", "code_action.ex"])
+        path: Path.join([cwd, "test/support/project/lib", "code_action.ex"])
       })
 
     assert_notification "textDocument/publishDiagnostics",
                         %{
                           "uri" => ^uri,
-                          "diagnostics" => [%{"severity" => 4}, %{"severity" => 4}]
+                          "diagnostics" => [
+                            %{"severity" => 4},
+                            %{"severity" => 4}
+                          ]
                         },
                         1000
 
     assert_notification "$/progress",
                         %{
-                          "value" => %{"kind" => "end", "message" => "Found 4 issues"}
+                          "value" => %{
+                            "kind" => "end",
+                            "message" => "Found 5 issues"
+                          }
                         },
                         1000
   end
 
   test "code actions outer module", %{client: client, cwd: cwd} do
-    assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
+    assert :ok ==
+             notify(client, %{
+               method: "initialized",
+               jsonrpc: "2.0",
+               params: %{}
+             })
 
     file = %URI{
       host: "",
       scheme: "file",
-      path: Path.join([cwd, "test/support/fixtures/lib", "code_action.ex"])
+      path: Path.join([cwd, "test/support/project/lib", "code_action.ex"])
     }
 
     uri = to_string(file)
@@ -171,7 +221,10 @@ defmodule CredoLanguageServerTest do
                params: %{
                  context: %{diagnostics: [diagnostic]},
                  textDocument: %{uri: uri},
-                 range: %{start: %{line: 0, character: 0}, end: %{line: 0, character: 0}}
+                 range: %{
+                   start: %{line: 0, character: 0},
+                   end: %{line: 0, character: 0}
+                 }
                }
              })
 
@@ -217,12 +270,17 @@ defmodule CredoLanguageServerTest do
   end
 
   test "code actions inner module", %{client: client, cwd: cwd} do
-    assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
+    assert :ok ==
+             notify(client, %{
+               method: "initialized",
+               jsonrpc: "2.0",
+               params: %{}
+             })
 
     file = %URI{
       host: "",
       scheme: "file",
-      path: Path.join([cwd, "test/support/fixtures/lib", "code_action.ex"])
+      path: Path.join([cwd, "test/support/project/lib", "code_action.ex"])
     }
 
     uri = to_string(file)
@@ -261,7 +319,10 @@ defmodule CredoLanguageServerTest do
                params: %{
                  context: %{diagnostics: [diagnostic]},
                  textDocument: %{uri: uri},
-                 range: %{start: %{line: 3, character: 2}, end: %{line: 3, character: 2}}
+                 range: %{
+                   start: %{line: 3, character: 2},
+                   end: %{line: 3, character: 2}
+                 }
                }
              })
 

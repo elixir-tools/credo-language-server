@@ -45,7 +45,7 @@ defmodule CredoLanguageServer do
   alias CredoLanguageServer.Cache, as: Diagnostics
 
   def start_link(args) do
-    {args, opts} = Keyword.split(args, [:cache, :task_supervisor])
+    {args, opts} = Keyword.split(args, [:cache, :task_supervisor, :runtime])
 
     GenLSP.start_link(__MODULE__, args, opts)
   end
@@ -54,6 +54,22 @@ defmodule CredoLanguageServer do
   def init(lsp, args) do
     cache = Keyword.fetch!(args, :cache)
     task_supervisor = Keyword.fetch!(args, :task_supervisor)
+    runtime = Keyword.fetch!(args, :runtime)
+
+    with false <- wait_until_runtime_ready(runtime) do
+      raise "Failed to boot runtime"
+    end
+
+    {:ok, _} =
+      CredoLanguageServer.Runtime.call(
+        runtime,
+        {Application, :ensure_all_started, [:credo]}
+      )
+
+    CredoLanguageServer.Runtime.call(
+      runtime,
+      {GenServer, :call, [Credo.CLI.Output.Shell, {:suppress_output, true}]}
+    )
 
     {:ok,
      assign(lsp,
@@ -61,12 +77,33 @@ defmodule CredoLanguageServer do
        cache: cache,
        documents: %{},
        refresh_refs: %{},
-       task_supervisor: task_supervisor
+       task_supervisor: task_supervisor,
+       runtime: runtime
      )}
   end
 
+  defp wait_until_runtime_ready(runtime) do
+    wait_until_runtime_ready(10, runtime)
+  end
+
+  defp wait_until_runtime_ready(0, _runtime) do
+    false
+  end
+
+  defp wait_until_runtime_ready(n, runtime) do
+    if CredoLanguageServer.Runtime.ready?(runtime) do
+      true
+    else
+      Process.sleep(1000)
+      wait_until_runtime_ready(n - 1, runtime)
+    end
+  end
+
   @impl true
-  def handle_request(%Initialize{params: %InitializeParams{root_uri: root_uri}}, lsp) do
+  def handle_request(
+        %Initialize{params: %InitializeParams{root_uri: root_uri}},
+        lsp
+      ) do
     {:reply,
      %InitializeResult{
        capabilities: %ServerCapabilities{
@@ -250,7 +287,10 @@ defmodule CredoLanguageServer do
     {:noreply, assign(lsp, refresh_refs: refs)}
   end
 
-  def handle_info({:DOWN, ref, :process, _pid, _reason}, %{assigns: %{refresh_refs: refs}} = lsp)
+  def handle_info(
+        {:DOWN, ref, :process, _pid, _reason},
+        %{assigns: %{refresh_refs: refs}} = lsp
+      )
       when is_map_key(refs, ref) do
     {token, refs} = Map.pop(refs, ref)
 
@@ -274,15 +314,22 @@ defmodule CredoLanguageServer do
     dir = URI.parse(lsp.assigns.root_uri).path
 
     issues =
-      ["--strict", "--all", "--working-dir", dir]
-      |> Credo.run()
-      |> Credo.Execution.get_issues()
+      CredoLanguageServer.Runtime.call(
+        lsp.assigns.runtime,
+        {CredoLanguageServer.Monkey.Credo, :issues, [dir]}
+      )
 
     for issue <- issues do
       diagnostic = %Diagnostic{
         range: %Range{
-          start: %Position{line: issue.line_no - 1, character: (issue.column || 1) - 1},
-          end: %Position{line: issue.line_no - 1, character: issue.column || 1}
+          start: %Position{
+            line: issue.line_no - 1,
+            character: (issue.column || 1) - 1
+          },
+          end: %Position{
+            line: issue.line_no - 1,
+            character: issue.column || 1
+          }
         },
         severity: category_to_severity(issue.category),
         data: %{check: issue.check, file: issue.filename},
@@ -295,7 +342,13 @@ defmodule CredoLanguageServer do
         """
       }
 
-      Diagnostics.put(lsp.assigns.cache, Path.absname(issue.filename), diagnostic)
+      Diagnostics.put(
+        lsp.assigns.cache,
+        Path.join(lsp.assigns.root_uri, issue.filename)
+        |> URI.parse()
+        |> Map.get(:path),
+        diagnostic
+      )
     end
 
     Enum.count(issues)
