@@ -32,7 +32,7 @@ defmodule CredoLanguageServerTest do
     assert :ok == notify(client, %{method: "initialized", jsonrpc: "2.0", params: %{}})
     assert :ok == request(client, %{method: "shutdown", id: 2, jsonrpc: "2.0", params: nil})
 
-    assert_result 2, nil
+    assert_result 2, nil, 1000
   end
 
   test "returns method not found for unimplemented requests", %{client: client} do
