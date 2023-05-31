@@ -47,6 +47,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: mix deps.get --only test
 
+      - name: Start EPMD
+        run: epmd -daemon
+
       - name: Run tests
         run: mix test
 
