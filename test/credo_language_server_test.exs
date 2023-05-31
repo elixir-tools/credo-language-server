@@ -92,7 +92,8 @@ defmodule CredoLanguageServerTest do
     assert_error ^id,
                  %{
                    "code" => -32_601,
-                   "message" => "Method Not Found: textDocument/documentSymbol"
+                   "message" =>
+                     "Method Not Found: textDocument/documentSymbol"
                  },
                  1000
   end
@@ -126,7 +127,10 @@ defmodule CredoLanguageServerTest do
              })
 
     assert_notification "window/logMessage",
-                        %{"message" => "[Credo] LSP Initialized!", "type" => 4},
+                        %{
+                          "message" => "[Credo] LSP Initialized!",
+                          "type" => 4
+                        },
                         1000
 
     assert_notification "$/progress", %{"value" => %{"kind" => "begin"}}, 500
@@ -140,7 +144,10 @@ defmodule CredoLanguageServerTest do
         })
 
       assert_notification "textDocument/publishDiagnostics",
-                          %{"uri" => ^uri, "diagnostics" => [%{"severity" => 4}]},
+                          %{
+                            "uri" => ^uri,
+                            "diagnostics" => [%{"severity" => 4}]
+                          },
                           1000
     end
 
