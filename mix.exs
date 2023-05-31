@@ -25,10 +25,10 @@ defmodule CredoLanguageServer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:gen_lsp, "~> 0.0.12"},
+      {:gen_lsp, "~> 0.1"},
       # {:gen_lsp, path: "../gen_lsp"},
       {:credo, "~> 1.0"},
-      {:schematic, "~> 0.0.11"},
+      {:schematic, "~> 0.1"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
