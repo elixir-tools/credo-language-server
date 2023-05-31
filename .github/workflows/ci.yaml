@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 jobs:
   test:
@@ -47,6 +46,12 @@ jobs:
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: mix deps.get --only test
+
+      - name: Start EPMD
+        run: epmd -daemon
+
+      - name: Compile test project
+        run: (cd test/support/project && mix deps.get && mix compile)
 
       - name: Run tests
         run: mix test

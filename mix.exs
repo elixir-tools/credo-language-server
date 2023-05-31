@@ -8,6 +8,7 @@ defmodule CredoLanguageServer.MixProject do
       version: "0.0.5",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
       deps: deps(),
       lockfile: System.get_env("CREDO_LOCKFILE", "mix.lock")
@@ -21,6 +22,9 @@ defmodule CredoLanguageServer.MixProject do
       mod: {CredoLanguageServer.Application, []}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support/helpers"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
@@ -37,7 +41,9 @@ defmodule CredoLanguageServer.MixProject do
     [
       maintainers: ["Mitchell Hanberg"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/elixir-tools/credo-language-server"},
+      links: %{
+        github: "https://github.com/elixir-tools/credo-language-server"
+      },
       files: ~w(lib LICENSE mix.exs README.md .formatter.exs)
     ]
   end

@@ -8,6 +8,14 @@
     notify: 2,
     request: 2
   ],
+  line_length: 78,
   import_deps: [:gen_lsp],
-  inputs: [".credo.exs", "{mix,.formatter}.exs", "{config,lib,test,}/**/*.{ex,exs}"]
+  inputs: [
+    ".credo.exs",
+    "{mix,.formatter}.exs",
+    "{config,lib,}/**/*.{ex,exs}",
+    "test/credo_language_server_test.exs",
+    "test/test_helper.exs",
+    "test/credo_language_server/**/*.{ex,exs}"
+  ]
 ]
