@@ -35,7 +35,7 @@
           ~r"/_build/",
           ~r"/deps/",
           ~r"/node_modules/",
-          "test/support/fixtures/**"
+          "test/support/project/**"
         ]
       },
       #
