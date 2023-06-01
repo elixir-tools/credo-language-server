@@ -24,3 +24,4 @@ credo_language_server-*.tar
 
 /tmp/
 
+.DS_Store
