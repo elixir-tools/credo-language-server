@@ -28,7 +28,6 @@ defmodule CredoLanguageServer.CodeAction.UnlessWithElse do
     |> IO.inspect()
     |> transform_ast()
     |> Code.quoted_to_algebra(comments: comments)
-    # adjust_comment_lines(comments, 1, 5))
     |> Inspect.Algebra.format(:infinity)
     |> IO.iodata_to_binary()
   end
@@ -46,10 +45,6 @@ defmodule CredoLanguageServer.CodeAction.UnlessWithElse do
     comments
     |> Enum.map(&adjust_comment_line(&1, block_line1, block_line2))
   end
-
-  # defp adjust_comment_line(%{previous_eol_count: 0, line: line} = comment) do
-  #   Map.put(comment, :line, line + 1)
-  # end
 
   defp adjust_comment_line(%{line: line} = comment, a, b) when line > b do
     diff = b - a
