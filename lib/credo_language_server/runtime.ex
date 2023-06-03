@@ -2,8 +2,6 @@ defmodule CredoLanguageServer.Runtime do
   @moduledoc false
   use GenServer
 
-  require Logger
-
   @exe :code.priv_dir(:credo_language_server)
        |> Path.join("cmd")
        |> Path.absname()
@@ -12,13 +10,33 @@ defmodule CredoLanguageServer.Runtime do
     GenServer.start_link(__MODULE__, opts, Keyword.take(opts, [:name]))
   end
 
+  @spec call(pid(), mfa()) :: any()
   def call(server, mfa), do: GenServer.call(server, {:call, mfa})
 
+  @spec ready?(pid()) :: boolean()
   def ready?(server), do: GenServer.call(server, :ready?)
 
+  @spec await(pid(), non_neg_integer()) :: :ok | :timeout
+  def await(server, count \\ 50)
+
+  def await(_server, 0) do
+    :timeout
+  end
+
+  def await(server, count) do
+    if ready?(server) do
+      :ok
+    else
+      Process.sleep(500)
+      await(server, count - 1)
+    end
+  end
+
+  @impl GenServer
   def init(opts) do
     sname = "credo#{System.system_time()}"
     working_dir = Keyword.fetch!(opts, :working_dir)
+    parent = Keyword.fetch!(opts, :parent)
 
     port =
       Port.open(
@@ -37,6 +55,7 @@ defmodule CredoLanguageServer.Runtime do
             "mix",
             "run",
             "--no-halt",
+            "--no-compile",
             "--no-start"
           ]
         ]
@@ -47,20 +66,28 @@ defmodule CredoLanguageServer.Runtime do
     Task.start_link(fn ->
       with {:ok, host} <- :inet.gethostname(),
            node <- :"#{sname}@#{host}",
-           true <- connect(node, 120) do
+           true <- connect(node, port, 120) do
+        send(parent, {:log, "Connected to node #{node}"})
+
         file =
-          Path.join(:code.priv_dir(:credo_language_server), "monkey/credo.ex")
+          Path.join(
+            :code.priv_dir(:credo_language_server),
+            "monkey/_credo_language_server_private.ex"
+          )
 
         :rpc.call(node, Code, :compile_file, [file])
+        :ok = :rpc.call(node, :_credo_language_server_private, :compile, [])
+
         send(me, {:node, node})
       else
         _ -> send(me, :cancel)
       end
     end)
 
-    {:ok, %{port: port}}
+    {:ok, %{port: port, parent: parent}}
   end
 
+  @impl GenServer
   def handle_call(:ready?, _from, %{node: _node} = state) do
     {:reply, true, state}
   end
@@ -74,30 +101,29 @@ defmodule CredoLanguageServer.Runtime do
     {:reply, reply, state}
   end
 
+  @impl GenServer
   def handle_info({:node, node}, state) do
     {:noreply, Map.put(state, :node, node)}
   end
 
   def handle_info({port, {:data, data}}, %{port: port} = state) do
-    Logger.debug(data)
+    send(state.parent, {:log, data})
     {:noreply, state}
   end
 
   def handle_info({port, other}, %{port: port} = state) do
-    Logger.debug(inspect(other))
+    send(state.parent, {:log, other})
     {:noreply, state}
   end
 
-  defp connect(_node, 0) do
+  defp connect(_node, _port, 0) do
     raise "failed to connect"
   end
 
-  defp connect(node, attempts) do
+  defp connect(node, port, attempts) do
     if Node.connect(node) in [false, :ignored] do
-      Logger.debug("Couldn't connect to node #{node}, retrying in 1s...")
-
       Process.sleep(1000)
-      connect(node, attempts - 1)
+      connect(node, port, attempts - 1)
     else
       true
     end

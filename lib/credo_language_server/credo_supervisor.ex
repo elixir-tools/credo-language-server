@@ -19,9 +19,6 @@ defmodule CredoLanguageServer.CredoSupervisor do
           strict: [stdio: :boolean, port: :integer]
         )
 
-      {:ok, _} = Application.ensure_all_started(:credo)
-      GenServer.call(Credo.CLI.Output.Shell, {:suppress_output, true})
-
       buffer_opts =
         cond do
           opts[:stdio] ->
@@ -36,14 +33,14 @@ defmodule CredoLanguageServer.CredoSupervisor do
         end
 
       children = [
-        {CredoLanguageServer.Runtime, name: CredoLanguageServer.Runtime},
+        {DynamicSupervisor, name: CredoLanguageServer.RuntimeSupervisor},
         {Task.Supervisor, name: CredoLanguageServer.TaskSupervisor},
         {GenLSP.Buffer, buffer_opts},
         {CredoLanguageServer.Cache, [name: :credo_cache]},
         {CredoLanguageServer,
          cache: :credo_cache,
          task_supervisor: CredoLanguageServer.TaskSupervisor,
-         runtime: CredoLanguageServer.Runtime}
+         runtime_supervisor: CredoLanguageServer.RuntimeSupervisor}
       ]
 
       Supervisor.init(children, strategy: :one_for_one)
