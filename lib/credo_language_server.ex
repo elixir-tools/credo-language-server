@@ -45,7 +45,8 @@ defmodule CredoLanguageServer do
   alias CredoLanguageServer.Cache, as: Diagnostics
 
   def start_link(args) do
-    {args, opts} = Keyword.split(args, [:cache, :task_supervisor, :runtime_supervisor])
+    {args, opts} =
+      Keyword.split(args, [:cache, :task_supervisor, :runtime_supervisor])
 
     GenLSP.start_link(__MODULE__, args, opts)
   end

@@ -29,7 +29,8 @@ defmodule CredoLanguageServer.RuntimeTest do
     capture_log(fn ->
       pid =
         start_supervised!(
-          {Runtime, working_dir: Path.absname("test/support/project"), parent: logger}
+          {Runtime,
+           working_dir: Path.absname("test/support/project"), parent: logger}
         )
 
       assert wait_for_ready(pid)
