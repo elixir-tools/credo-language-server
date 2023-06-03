@@ -1,15 +1,39 @@
 defmodule CredoLanguageServer.RuntimeTest do
   use ExUnit.Case, async: true
 
+  require Logger
+
+  import ExUnit.CaptureLog
+
   alias CredoLanguageServer.Runtime
 
-  test "can run code on the node" do
-    pid =
-      start_supervised!(
-        {Runtime, working_dir: Path.absname("test/support/project")}
-      )
+  setup do
+    {:ok, logger} =
+      Task.start(fn ->
+        recv = fn recv ->
+          receive do
+            {:log, msg} ->
+              Logger.debug(msg)
+          end
 
-    assert wait_for_ready(pid)
+          recv.(recv)
+        end
+
+        recv.(recv)
+      end)
+
+    [logger: logger]
+  end
+
+  test "can run code on the node", %{logger: logger} do
+    capture_log(fn ->
+      pid =
+        start_supervised!(
+          {Runtime, working_dir: Path.absname("test/support/project"), parent: logger}
+        )
+
+      assert wait_for_ready(pid)
+    end) =~ "Connected to node"
   end
 
   defp wait_for_ready(pid) do
