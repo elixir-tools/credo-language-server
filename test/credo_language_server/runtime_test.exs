@@ -33,6 +33,8 @@ defmodule CredoLanguageServer.RuntimeTest do
            working_dir: Path.absname("test/support/project"), parent: logger}
         )
 
+      Process.link(pid)
+
       assert wait_for_ready(pid)
     end) =~ "Connected to node"
   end
