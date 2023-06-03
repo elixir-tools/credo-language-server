@@ -9,7 +9,7 @@ defmodule CredoLanguageServerTest do
     root_path = Path.join(cwd, "test/support/project")
 
     tvisor = start_supervised!(Task.Supervisor)
-    rvisor = start_supervised!(DynamicSupervisor)
+    rvisor = start_supervised!({DynamicSupervisor, [strategy: :one_for_one]})
     cache = start_supervised!(CredoLanguageServer.Cache)
 
     server =
