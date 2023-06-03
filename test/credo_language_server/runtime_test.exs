@@ -9,7 +9,7 @@ defmodule CredoLanguageServer.RuntimeTest do
 
   setup do
     {:ok, logger} =
-      Task.start(fn ->
+      Task.start_link(fn ->
         recv = fn recv ->
           receive do
             {:log, msg} ->
