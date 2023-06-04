@@ -143,14 +143,14 @@ defmodule CredoLanguageServer do
         token: token,
         value: %WorkDoneProgressBegin{
           kind: "begin",
-          title: "Finding issues..."
+          title: "Initializing Credo..."
         }
       }
     })
 
     working_dir = URI.parse(lsp.assigns.root_uri).path
 
-    GenLSP.log(lsp, "Booting runime...")
+    GenLSP.log(lsp, "[Credo] Booting runime...")
 
     {:ok, runtime} =
       DynamicSupervisor.start_child(
@@ -171,7 +171,7 @@ defmodule CredoLanguageServer do
           raise "Failed to boot runtime"
         end
 
-        GenLSP.log(lsp, "Runtime ready...")
+        GenLSP.log(lsp, "[Credo] Runtime ready...")
 
         with false <-
                wait_until(fn ->
@@ -187,7 +187,7 @@ defmodule CredoLanguageServer do
           raise "Failed to start credo"
         end
 
-        GenLSP.log(lsp, "Credo started in runtime...")
+        GenLSP.log(lsp, "[Credo] Credo started in runtime...")
 
         CredoLanguageServer.Runtime.call(
           runtime,
