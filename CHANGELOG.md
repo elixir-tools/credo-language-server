@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.0-rc.1
+
+- Include priv dir when publishing
+
 ## 0.1.0-rc.0
 
 - Custom check/plugin compatibility
