@@ -26,6 +26,7 @@ jobs:
             elixir: 1.10.x
     env:
       CREDO_LOCKFILE: ../../../lockfiles/mix-credo-${{matrix.credo}}.lock
+      CI: true
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
@@ -51,6 +52,8 @@ jobs:
         run: epmd -daemon
 
       - name: Compile test project
+        env:
+          MIX_ENV: credolsp
         run: (cd test/support/project && mix deps.get && mix compile)
 
       - name: Compile
