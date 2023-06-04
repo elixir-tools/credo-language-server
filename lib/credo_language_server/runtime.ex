@@ -47,6 +47,9 @@ defmodule CredoLanguageServer.Runtime do
           :binary,
           :stream,
           cd: working_dir,
+          env: [
+            {'MIX_ENV', 'dev'}
+          ],
           args: [
             System.find_executable("elixir"),
             "--sname",
