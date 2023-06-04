@@ -10,8 +10,7 @@ defmodule CredoLanguageServer.MixProject do
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
-      deps: deps(),
-      lockfile: System.get_env("CREDO_LOCKFILE", "mix.lock")
+      deps: deps()
     ]
   end
 
@@ -31,7 +30,7 @@ defmodule CredoLanguageServer.MixProject do
     [
       {:gen_lsp, "~> 0.1"},
       # {:gen_lsp, path: "../gen_lsp"},
-      {:credo, "~> 1.0"},
+      {:credo, "~> 1.7"},
       {:schematic, "~> 0.1"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
