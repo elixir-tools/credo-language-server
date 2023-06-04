@@ -43,7 +43,7 @@ defmodule CredoLanguageServer.MixProject do
       links: %{
         github: "https://github.com/elixir-tools/credo-language-server"
       },
-      files: ~w(lib LICENSE mix.exs README.md .formatter.exs)
+      files: ~w(lib LICENSE mix.exs priv README.md .formatter.exs)
     ]
   end
 end
