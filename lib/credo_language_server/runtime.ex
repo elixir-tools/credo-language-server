@@ -48,7 +48,7 @@ defmodule CredoLanguageServer.Runtime do
           :stream,
           cd: working_dir,
           env: [
-            {'MIX_ENV', 'dev'}
+            {'MIX_ENV', 'credolsp'}
           ],
           args: [
             System.find_executable("elixir"),
