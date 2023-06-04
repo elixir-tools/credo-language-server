@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.0-rc.0
+
+- Custom check/plugin compatibility
+
 ## v0.0.5
 
 - Correctly shut down and do not leave zombie processes #28
