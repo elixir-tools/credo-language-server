@@ -1,5 +1,5 @@
 defmodule CredoLanguageServer.RuntimeTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   require Logger
 
