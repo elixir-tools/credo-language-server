@@ -1,12 +1,14 @@
 defmodule CredoLanguageServerTest do
   use ExUnit.Case, async: true
 
+  @moduletag :tmp_dir
+
   import GenLSP.Test
 
-  setup do
-    cwd = File.cwd!()
+  setup %{tmp_dir: tmp_dir} do
+    File.cp_r!("test/support/project", tmp_dir)
 
-    root_path = Path.join(cwd, "test/support/project")
+    root_path = Path.absname(tmp_dir)
 
     tvisor = start_supervised!(Task.Supervisor)
     rvisor = start_supervised!({DynamicSupervisor, [strategy: :one_for_one]})
@@ -29,7 +31,7 @@ defmodule CredoLanguageServerTest do
                params: %{capabilities: %{}, rootUri: "file://#{root_path}"}
              })
 
-    [server: server, client: client, cwd: cwd]
+    [server: server, client: client, cwd: root_path]
   end
 
   test "can start the LSP server", %{server: server} do
@@ -137,7 +139,7 @@ defmodule CredoLanguageServerTest do
         to_string(%URI{
           host: "",
           scheme: "file",
-          path: Path.join([cwd, "test/support/project/lib", file])
+          path: Path.join([cwd, "lib", file])
         })
 
       assert_notification "textDocument/publishDiagnostics",
@@ -151,7 +153,7 @@ defmodule CredoLanguageServerTest do
       to_string(%URI{
         host: "",
         scheme: "file",
-        path: Path.join([cwd, "test/support/project/lib", "code_action.ex"])
+        path: Path.join([cwd, "lib", "code_action.ex"])
       })
 
     assert_notification "textDocument/publishDiagnostics",
@@ -183,7 +185,7 @@ defmodule CredoLanguageServerTest do
     file = %URI{
       host: "",
       scheme: "file",
-      path: Path.join([cwd, "test/support/project/lib", "code_action.ex"])
+      path: Path.join([cwd, "lib", "code_action.ex"])
     }
 
     uri = to_string(file)
@@ -279,7 +281,7 @@ defmodule CredoLanguageServerTest do
     file = %URI{
       host: "",
       scheme: "file",
-      path: Path.join([cwd, "test/support/project/lib", "code_action.ex"])
+      path: Path.join([cwd, "lib", "code_action.ex"])
     }
 
     uri = to_string(file)

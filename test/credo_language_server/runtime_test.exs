@@ -1,13 +1,16 @@
 defmodule CredoLanguageServer.RuntimeTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
+
+  @moduletag :tmp_dir
 
   require Logger
-
   import ExUnit.CaptureLog
 
   alias CredoLanguageServer.Runtime
 
-  setup do
+  setup %{tmp_dir: tmp_dir} do
+    File.cp_r!("test/support/project", tmp_dir)
+
     {:ok, logger} =
       Task.start_link(fn ->
         recv = fn recv ->
@@ -22,16 +25,12 @@ defmodule CredoLanguageServer.RuntimeTest do
         recv.(recv)
       end)
 
-    [logger: logger]
+    [logger: logger, cwd: Path.absname(tmp_dir)]
   end
 
-  test "can run code on the node", %{logger: logger} do
+  test "can run code on the node", %{logger: logger, cwd: cwd} do
     capture_log(fn ->
-      pid =
-        start_supervised!(
-          {Runtime,
-           working_dir: Path.absname("test/support/project"), parent: logger}
-        )
+      pid = start_supervised!({Runtime, working_dir: cwd, parent: logger})
 
       Process.link(pid)
 
