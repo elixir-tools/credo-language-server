@@ -45,7 +45,8 @@ defmodule CredoLanguageServer do
   alias CredoLanguageServer.Cache, as: Diagnostics
 
   def start_link(args) do
-    {args, opts} = Keyword.split(args, [:cache, :task_supervisor, :runtime])
+    {args, opts} =
+      Keyword.split(args, [:cache, :task_supervisor, :runtime_supervisor])
 
     GenLSP.start_link(__MODULE__, args, opts)
   end
@@ -54,22 +55,7 @@ defmodule CredoLanguageServer do
   def init(lsp, args) do
     cache = Keyword.fetch!(args, :cache)
     task_supervisor = Keyword.fetch!(args, :task_supervisor)
-    runtime = Keyword.fetch!(args, :runtime)
-
-    with false <- wait_until_runtime_ready(runtime) do
-      raise "Failed to boot runtime"
-    end
-
-    {:ok, _} =
-      CredoLanguageServer.Runtime.call(
-        runtime,
-        {Application, :ensure_all_started, [:credo]}
-      )
-
-    CredoLanguageServer.Runtime.call(
-      runtime,
-      {GenServer, :call, [Credo.CLI.Output.Shell, {:suppress_output, true}]}
-    )
+    runtime_supervisor = Keyword.fetch!(args, :runtime_supervisor)
 
     {:ok,
      assign(lsp,
@@ -78,25 +64,8 @@ defmodule CredoLanguageServer do
        documents: %{},
        refresh_refs: %{},
        task_supervisor: task_supervisor,
-       runtime: runtime
+       runtime_supervisor: runtime_supervisor
      )}
-  end
-
-  defp wait_until_runtime_ready(runtime) do
-    wait_until_runtime_ready(10, runtime)
-  end
-
-  defp wait_until_runtime_ready(0, _runtime) do
-    false
-  end
-
-  defp wait_until_runtime_ready(n, runtime) do
-    if CredoLanguageServer.Runtime.ready?(runtime) do
-      true
-    else
-      Process.sleep(1000)
-      wait_until_runtime_ready(n - 1, runtime)
-    end
   end
 
   @impl true
@@ -179,20 +148,59 @@ defmodule CredoLanguageServer do
       }
     })
 
-    count = refresh(lsp)
-    publish(lsp)
+    working_dir = URI.parse(lsp.assigns.root_uri).path
 
-    GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
-      params: %GenLSP.Structures.ProgressParams{
-        token: token,
-        value: %WorkDoneProgressEnd{
-          kind: "end",
-          message: "Found #{count} issues"
-        }
-      }
-    })
+    GenLSP.log(lsp, "Booting runime...")
 
-    {:noreply, lsp}
+    {:ok, runtime} =
+      DynamicSupervisor.start_child(
+        lsp.assigns.runtime_supervisor,
+        {CredoLanguageServer.Runtime,
+         working_dir: working_dir, parent: self()}
+      )
+
+    lsp = assign(lsp, runtime: runtime)
+
+    task =
+      Task.Supervisor.async_nolink(lsp.assigns.task_supervisor, fn ->
+        with false <-
+               wait_until(fn ->
+                 CredoLanguageServer.Runtime.ready?(runtime)
+               end) do
+          GenLSP.error(lsp, "Failed to start runtime")
+          raise "Failed to boot runtime"
+        end
+
+        GenLSP.log(lsp, "Runtime ready...")
+
+        with false <-
+               wait_until(fn ->
+                 match?(
+                   {:ok, _},
+                   CredoLanguageServer.Runtime.call(
+                     runtime,
+                     {Application, :ensure_all_started, [:credo]}
+                   )
+                 )
+               end) do
+          GenLSP.error(lsp, "Failed to start the Credo application")
+          raise "Failed to start credo"
+        end
+
+        GenLSP.log(lsp, "Credo started in runtime...")
+
+        CredoLanguageServer.Runtime.call(
+          runtime,
+          {GenServer, :call,
+           [Credo.CLI.Output.Shell, {:suppress_output, true}]}
+        )
+
+        count = refresh(lsp)
+        publish(lsp)
+        count
+      end)
+
+    {:noreply, put_in(lsp.assigns.refresh_refs[task.ref], token)}
   end
 
   def handle_notification(
@@ -306,6 +314,12 @@ defmodule CredoLanguageServer do
     {:noreply, assign(lsp, refresh_refs: refs)}
   end
 
+  def handle_info({:log, message}, lsp) do
+    GenLSP.log(lsp, String.trim(message))
+
+    {:noreply, lsp}
+  end
+
   def handle_info(_, lsp) do
     {:noreply, lsp}
   end
@@ -316,7 +330,7 @@ defmodule CredoLanguageServer do
     issues =
       CredoLanguageServer.Runtime.call(
         lsp.assigns.runtime,
-        {CredoLanguageServer.Monkey.Credo, :issues, [dir]}
+        {:_credo_language_server_private, :issues, [dir]}
       )
 
     for issue <- issues do
@@ -338,7 +352,7 @@ defmodule CredoLanguageServer do
 
         ## Explanation
 
-        #{issue.check.explanations()[:check]}
+        #{CredoLanguageServer.Runtime.call(lsp.assigns.runtime, {issue.check, :explanations, []})[:check]}
         """
       }
 
@@ -370,4 +384,21 @@ defmodule CredoLanguageServer do
   defp category_to_severity(:design), do: DiagnosticSeverity.information()
   defp category_to_severity(:consistency), do: DiagnosticSeverity.hint()
   defp category_to_severity(:readability), do: DiagnosticSeverity.hint()
+
+  defp wait_until(cb) do
+    wait_until(120, cb)
+  end
+
+  defp wait_until(0, _cb) do
+    false
+  end
+
+  defp wait_until(n, cb) do
+    if cb.() do
+      true
+    else
+      Process.sleep(1000)
+      wait_until(n - 1, cb)
+    end
+  end
 end

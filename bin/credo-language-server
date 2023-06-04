@@ -1,13 +1,7 @@
-#!/usr/bin/env elixir
+#!/usr/bin/env elixir --sname undefined
 
 System.no_halt(true)
 
-{%{credo: {_, :credo, credo_version, _, _, _, _, _}}, _} = Code.eval_file("./mix.lock")
-
-Mix.install([
-  {:credo_language_server, "0.0.4"},
-  {:credo, credo_version}
-])
+Mix.install([:credo_language_server])
 
 Application.ensure_all_started(:credo_language_server)
-
