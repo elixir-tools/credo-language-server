@@ -51,6 +51,8 @@ jobs:
         run: epmd -daemon
 
       - name: Compile test project
+        env:
+          MIX_ENV: credolsp
         run: (cd test/support/project && mix deps.get && mix compile)
 
       - name: Compile
