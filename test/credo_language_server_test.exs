@@ -8,7 +8,7 @@ defmodule CredoLanguageServerTest do
   setup %{tmp_dir: tmp_dir} do
     File.cp_r!("test/support/project", tmp_dir)
 
-    root_path = tmp_dir
+    root_path = Path.absname(tmp_dir)
 
     tvisor = start_supervised!(Task.Supervisor)
     rvisor = start_supervised!({DynamicSupervisor, [strategy: :one_for_one]})
@@ -31,7 +31,7 @@ defmodule CredoLanguageServerTest do
                params: %{capabilities: %{}, rootUri: "file://#{root_path}"}
              })
 
-    [server: server, client: client, cwd: tmp_dir]
+    [server: server, client: client, cwd: root_path]
   end
 
   test "can start the LSP server", %{server: server} do

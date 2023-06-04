@@ -25,7 +25,7 @@ defmodule CredoLanguageServer.RuntimeTest do
         recv.(recv)
       end)
 
-    [logger: logger, cwd: tmp_dir]
+    [logger: logger, cwd: Path.absname(tmp_dir)]
   end
 
   test "can run code on the node", %{logger: logger, cwd: cwd} do
