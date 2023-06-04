@@ -30,6 +30,7 @@ defmodule CredoLanguageServer.MixProject do
     [
       {:gen_lsp, "~> 0.1"},
       # {:gen_lsp, path: "../gen_lsp"},
+      {:credo, "~> 1.7"},
       {:schematic, "~> 0.1"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
