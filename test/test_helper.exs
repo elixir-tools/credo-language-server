@@ -5,7 +5,7 @@ Logger.configure(level: :warn)
 
 timeout =
   if System.get_env("CI", "false") == "true" do
-    30_000
+    60_000
   else
     10_000
   end
