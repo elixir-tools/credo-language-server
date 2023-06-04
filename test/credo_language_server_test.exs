@@ -45,7 +45,7 @@ defmodule CredoLanguageServerTest do
              })
 
     assert_notification "window/logMessage",
-                        %{"message" => "Runtime ready..."}
+                        %{"message" => "[Credo] Runtime ready..."}
 
     assert :ok ==
              request(client, %{
@@ -130,7 +130,7 @@ defmodule CredoLanguageServerTest do
                           "type" => 4
                         }
 
-    assert_notification "$/progress", %{"value" => %{"kind" => "begin"}}, 500
+    assert_notification "$/progress", %{"value" => %{"kind" => "begin"}}
 
     for file <- ["foo.ex", "bar.ex"] do
       uri =
