@@ -382,8 +382,12 @@ defmodule CredoLanguageServer do
   defp category_to_severity(:refactor), do: DiagnosticSeverity.error()
   defp category_to_severity(:warning), do: DiagnosticSeverity.warning()
   defp category_to_severity(:design), do: DiagnosticSeverity.information()
-  defp category_to_severity(:consistency), do: DiagnosticSeverity.hint()
-  defp category_to_severity(:readability), do: DiagnosticSeverity.hint()
+
+  defp category_to_severity(:consistency),
+    do: DiagnosticSeverity.information()
+
+  defp category_to_severity(:readability),
+    do: DiagnosticSeverity.information()
 
   defp wait_until(cb) do
     wait_until(120, cb)

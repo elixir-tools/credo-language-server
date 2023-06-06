@@ -145,7 +145,7 @@ defmodule CredoLanguageServerTest do
       assert_notification "textDocument/publishDiagnostics",
                           %{
                             "uri" => ^uri,
-                            "diagnostics" => [%{"severity" => 4}]
+                            "diagnostics" => [%{"severity" => 3}]
                           }
     end
 
@@ -160,8 +160,8 @@ defmodule CredoLanguageServerTest do
                         %{
                           "uri" => ^uri,
                           "diagnostics" => [
-                            %{"severity" => 4},
-                            %{"severity" => 4}
+                            %{"severity" => 3},
+                            %{"severity" => 3}
                           ]
                         }
 
@@ -197,8 +197,8 @@ defmodule CredoLanguageServerTest do
                         }
 
     [
-      %{"severity" => 4} = diagnostic,
-      %{"severity" => 4}
+      %{"severity" => 3} = diagnostic,
+      %{"severity" => 3}
     ] = Enum.sort(diagnostics)
 
     assert :ok ==
@@ -307,8 +307,8 @@ defmodule CredoLanguageServerTest do
              })
 
     [
-      %{"severity" => 4},
-      %{"severity" => 4} = diagnostic
+      %{"severity" => 3},
+      %{"severity" => 3} = diagnostic
     ] = Enum.sort(diagnostics)
 
     assert :ok ==
