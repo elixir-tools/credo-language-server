@@ -12,12 +12,8 @@ credo-language-server is an LSP implementation for Credo.
 ## Editor Support
 
 <ul>
-<li>
-Neovim: <a href="https://github.com/elixir-tools/elixir-tools.nvim">elixir-tools.nvim</a>
-</li>
-<li>
-VSCode: <a href="https://github.com/elixir-tools/elixir-tools.vscode">elixir-tools.vscode</a>
-</li>
+<li>Neovim: <a href="https://github.com/elixir-tools/elixir-tools.nvim">elixir-tools.nvim</a></li>
+<li>VSCode: <a href="https://github.com/elixir-tools/elixir-tools.vscode">elixir-tools.vscode</a></li>
 
 <li>
 <details>
@@ -56,6 +52,12 @@ args = ["--stdio=true", "--port=999"]
 The preferred way to use credo-language-server is through one of the supported editor extensions.
 
 If you need to install credo-language-server on it's own, you can download the executable hosted by the GitHub release. The executable is an Elixir script that utilizes `Mix.install/2`.
+
+### Note
+
+Credo Language Server creates an `.elixir-tools` hidden directory in your project.
+
+This should be added to your project's `.gitignore`.
 
 ## Code Actions
 
