@@ -6,6 +6,14 @@ defmodule CredoLanguageServer.Runtime do
        |> Path.join("cmd")
        |> Path.absname()
 
+  unless macro_exported?(Kernel, :then, 2) do
+    defmacrop then(value, fun) do
+      quote do
+        unquote(fun).(unquote(value))
+      end
+    end
+  end
+
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, Keyword.take(opts, [:name]))
   end
