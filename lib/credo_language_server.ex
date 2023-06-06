@@ -64,7 +64,8 @@ defmodule CredoLanguageServer do
        documents: %{},
        refresh_refs: %{},
        task_supervisor: task_supervisor,
-       runtime_supervisor: runtime_supervisor
+       runtime_supervisor: runtime_supervisor,
+       ready: false
      )}
   end
 
@@ -199,10 +200,19 @@ defmodule CredoLanguageServer do
 
         count = refresh(lsp)
         publish(lsp)
-        count
+        {:init, count}
       end)
 
-    {:noreply, put_in(lsp.assigns.refresh_refs[task.ref], token)}
+    {:noreply,
+     lsp
+     |> (&put_in(&1.assigns.refresh_refs[task.ref], token)).()}
+  end
+
+  def handle_notification(
+        %TextDocumentDidSave{},
+        %{assigns: %{ready: false}} = lsp
+      ) do
+    {:noreply, lsp}
   end
 
   def handle_notification(
@@ -212,7 +222,7 @@ defmodule CredoLanguageServer do
             text_document: %{uri: uri}
           }
         },
-        lsp
+        %{assigns: %{ready: true}} = lsp
       ) do
     token =
       8
@@ -243,6 +253,13 @@ defmodule CredoLanguageServer do
      lsp
      |> (&put_in(&1.assigns.documents[uri], String.split(text, "\n"))).()
      |> (&put_in(&1.assigns.refresh_refs[task.ref], token)).()}
+  end
+
+  def handle_notification(
+        %TextDocumentDidChange{},
+        %{assigns: %{ready: false}} = lsp
+      ) do
+    {:noreply, lsp}
   end
 
   def handle_notification(%TextDocumentDidChange{}, lsp) do
@@ -279,10 +296,19 @@ defmodule CredoLanguageServer do
     {:noreply, lsp}
   end
 
-  def handle_info({ref, count}, %{assigns: %{refresh_refs: refs}} = lsp)
+  def handle_info({ref, resp}, %{assigns: %{refresh_refs: refs}} = lsp)
       when is_map_key(refs, ref) do
     Process.demonitor(ref, [:flush])
     {token, refs} = Map.pop(refs, ref)
+
+    {lsp, count} =
+      case resp do
+        {:init, count} ->
+          {assign(lsp, ready: true), count}
+
+        count ->
+          {lsp, count}
+      end
 
     GenLSP.notify(lsp, %GenLSP.Notifications.DollarProgress{
       params: %GenLSP.Structures.ProgressParams{
