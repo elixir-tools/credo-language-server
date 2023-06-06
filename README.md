@@ -11,9 +11,15 @@ credo-language-server is an LSP implementation for Credo.
 
 ## Editor Support
 
-- Neovim: [elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim)
-- VSCode: [elixir-tools.vscode](https://github.com/elixir-tools/elixir-tools.vscode)
+<ul>
+<li>
+Neovim: [elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim)
+</li>
+<li>
+VSCode: [elixir-tools.vscode](https://github.com/elixir-tools/elixir-tools.vscode)
+</li>
 
+<li>
 <details>
 <summary>Helix</summary>
 
@@ -42,6 +48,8 @@ args = ["--stdio=true", "--port=999"]
 ```
 
 </details>
+</li>
+</ul>
 
 ## Installation
 
