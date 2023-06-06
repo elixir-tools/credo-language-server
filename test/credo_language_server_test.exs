@@ -21,6 +21,8 @@ defmodule CredoLanguageServerTest do
         runtime_supervisor: rvisor
       )
 
+    Process.link(server.lsp)
+
     client = client(server)
 
     assert :ok ==

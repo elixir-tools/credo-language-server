@@ -73,6 +73,8 @@ defmodule CredoLanguageServer.Runtime do
         ]
       )
 
+    Port.monitor(port)
+
     me = self()
 
     Task.start_link(fn ->
@@ -124,6 +126,7 @@ defmodule CredoLanguageServer.Runtime do
 
   @impl GenServer
   def handle_info({:node, node}, state) do
+    Node.monitor(node, true)
     {:noreply, Map.put(state, :node, node)}
   end
 
