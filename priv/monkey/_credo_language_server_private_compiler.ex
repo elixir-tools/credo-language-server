@@ -1,11 +1,5 @@
-defmodule :_credo_language_server_private do
+defmodule :_credo_language_server_private_compiler do
   @moduledoc false
-
-  def issues(dir) do
-    ["--strict", "--all", "--working-dir", dir]
-    |> Credo.run()
-    |> Credo.Execution.get_issues()
-  end
 
   def compile() do
     # keep stdout on this node
@@ -16,6 +10,6 @@ defmodule :_credo_language_server_private do
 
     :ok
   rescue
-    _ -> :error
+    e -> {:error, e}
   end
 end

@@ -330,7 +330,7 @@ defmodule CredoLanguageServer do
     issues =
       CredoLanguageServer.Runtime.call(
         lsp.assigns.runtime,
-        {:_credo_language_server_private, :issues, [dir]}
+        {:_credo_language_server_private_credo, :issues, [dir]}
       )
 
     for issue <- issues do

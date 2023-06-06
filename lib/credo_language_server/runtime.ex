@@ -6,6 +6,14 @@ defmodule CredoLanguageServer.Runtime do
        |> Path.join("cmd")
        |> Path.absname()
 
+  unless macro_exported?(Kernel, :then, 2) do
+    defmacrop then(value, fun) do
+      quote do
+        unquote(fun).(unquote(value))
+      end
+    end
+  end
+
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, Keyword.take(opts, [:name]))
   end
@@ -48,7 +56,8 @@ defmodule CredoLanguageServer.Runtime do
           :stream,
           cd: working_dir,
           env: [
-            {'MIX_ENV', 'credolsp'}
+            {'MIX_ENV', 'dev'},
+            {'MIX_BUILD_ROOT', '.elixir-tools/_build'}
           ],
           args: [
             System.find_executable("elixir"),
@@ -72,14 +81,23 @@ defmodule CredoLanguageServer.Runtime do
            true <- connect(node, port, 120) do
         send(parent, {:log, "Connected to node #{node}"})
 
-        file =
-          Path.join(
-            :code.priv_dir(:credo_language_server),
-            "monkey/_credo_language_server_private.ex"
+        :credo_language_server
+        |> :code.priv_dir()
+        |> Path.join("monkey/_credo_language_server_private_compiler.ex")
+        |> then(&:rpc.call(node, Code, :compile_file, [&1]))
+
+        :ok =
+          :rpc.call(
+            node,
+            :_credo_language_server_private_compiler,
+            :compile,
+            []
           )
 
-        :rpc.call(node, Code, :compile_file, [file])
-        :ok = :rpc.call(node, :_credo_language_server_private, :compile, [])
+        :credo_language_server
+        |> :code.priv_dir()
+        |> Path.join("monkey/_credo_language_server_private_credo.ex")
+        |> then(&:rpc.call(node, Code, :compile_file, [&1]))
 
         send(me, {:node, node})
       else
