@@ -159,6 +159,8 @@ defmodule CredoLanguageServer do
          working_dir: working_dir, parent: self()}
       )
 
+    Process.monitor(runtime)
+
     lsp = assign(lsp, runtime: runtime)
 
     task =
@@ -312,6 +314,15 @@ defmodule CredoLanguageServer do
     })
 
     {:noreply, assign(lsp, refresh_refs: refs)}
+  end
+
+  def handle_info(
+        {:DOWN, _ref, :process, runtime, _reason},
+        %{assigns: %{runtime: runtime}} = lsp
+      ) do
+    GenLSP.error(lsp, "[Credo] The Credo runtime has crashed")
+
+    {:noreply, assign(lsp, runtime: nil)}
   end
 
   def handle_info({:log, message}, lsp) do
