@@ -11,17 +11,11 @@ credo-language-server is an LSP implementation for Credo.
 
 ## Editor Support
 
-### Neovim
-
-[elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim)
-### VSCode
-
-[elixir-tools.vscode](https://github.com/elixir-tools/elixir-tools.vscode)
-
-### Helix
+- Neovim: [elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim)
+- VSCode: [elixir-tools.vscode](https://github.com/elixir-tools/elixir-tools.vscode)
 
 <details>
-<summary>example configuration</summary>
+<summary>Helix</summary>
 
 Here is an example configuration for `languages.toml`
 
@@ -45,11 +39,9 @@ config = { elixirLS.dialyzerEnabled = true }
 [language-server.credo]
 command = "/path/to/executable/credo-language-server"
 args = ["--stdio=true", "--port=999"]
-
 ```
 
 </details>
-
 
 ## Installation
 
@@ -59,9 +51,17 @@ If you need to install credo-language-server on it's own, you can download the e
 
 ## Code Actions
 
-### Disable Check
+### DisableCheck
+
+Check: all
 
 If there is a check that you'd wish to disable, you can trigger the code action on that line to insert a magic comment to disable that check.
+
+### ModuleDocFalse
+
+Check: `Credo.Check.Readability.ModuleDoc`
+
+Inject a `@moduledoc false` snippet into the module.
 
 ---
 
