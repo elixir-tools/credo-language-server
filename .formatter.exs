@@ -16,6 +16,7 @@
     "{config,lib,}/**/*.{ex,exs}",
     "test/credo_language_server_test.exs",
     "test/test_helper.exs",
-    "test/credo_language_server/**/*.{ex,exs}"
+    "test/credo_language_server/**/*.{ex,exs}",
+    "priv/**/*.ex"
   ]
 ]
