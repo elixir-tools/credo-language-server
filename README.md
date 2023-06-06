@@ -13,10 +13,10 @@ credo-language-server is an LSP implementation for Credo.
 
 <ul>
 <li>
-Neovim: [elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim)
+Neovim: <a href="https://github.com/elixir-tools/elixir-tools.nvim">elixir-tools.nvim</a>
 </li>
 <li>
-VSCode: [elixir-tools.vscode](https://github.com/elixir-tools/elixir-tools.vscode)
+VSCode: <a href="https://github.com/elixir-tools/elixir-tools.vscode">elixir-tools.vscode</a>
 </li>
 
 <li>
