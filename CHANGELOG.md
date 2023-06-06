@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.1.0-rc.2
+
+- feat!: Changed Readability and Consistency check diagnostics from `hint` to `information` severity.
+- fix: build to correct alternate location
+
+  The new runtime will compile artifacts to a new `.elixir-tools` directory in your project root. This should be added to the `.gitignore`
+
 ## 0.1.0-rc.1
 
 - Include priv dir when publishing
