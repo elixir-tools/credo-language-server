@@ -147,7 +147,17 @@ defmodule CredoLanguageServerTest do
       assert_notification "textDocument/publishDiagnostics",
                           %{
                             "uri" => ^uri,
-                            "diagnostics" => [%{"severity" => 3}]
+                            "diagnostics" => [
+                              %{
+                                "source" => "credo",
+                                "code" => "Credo.Check.Readability.ModuleDoc",
+                                "codeDescription" => %{
+                                  "href" =>
+                                    "https://hexdocs.pm/credo/Credo.Check.Readability.ModuleDoc.html"
+                                },
+                                "severity" => 3
+                              }
+                            ]
                           }
     end
 

@@ -27,6 +27,7 @@ defmodule CredoLanguageServer do
     CodeActionContext,
     CodeActionOptions,
     CodeActionParams,
+    CodeDescription,
     Diagnostic,
     DidOpenTextDocumentParams,
     InitializeParams,
@@ -384,13 +385,13 @@ defmodule CredoLanguageServer do
         },
         severity: category_to_severity(issue.category),
         data: %{check: issue.check, file: issue.filename},
-        message: """
-        #{issue.message}
-
-        ## Explanation
-
-        #{CredoLanguageServer.Runtime.call(lsp.assigns.runtime, {issue.check, :explanations, []})[:check]}
-        """
+        source: "credo",
+        code: Macro.to_string(issue.check),
+        code_description: %CodeDescription{
+          href:
+            "https://hexdocs.pm/credo/#{Macro.to_string(issue.check)}.html"
+        },
+        message: issue.message
       }
 
       Diagnostics.put(
