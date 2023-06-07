@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.1.0-rc.3
+
+- feat: log runtime errors to the client by @mhanberg in https://github.com/elixir-tools/credo-language-server/pull/48
+- fix: wait for runtime to be ready before handling some notifications by @mhanberg in https://github.com/elixir-tools/credo-language-server/pull/49
+- feat: replace deps.compile with deps.loadpaths by @mhanberg in https://github.com/elixir-tools/credo-language-server/pull/50
+- feat: include more data in diagnostic by @mhanberg in https://github.com/elixir-tools/credo-language-server/pull/52
+
+
 ## 0.1.0-rc.2
 
 - feat!: Changed Readability and Consistency check diagnostics from `hint` to `information` severity.
