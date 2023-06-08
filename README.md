@@ -2,7 +2,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-5865F3?style=flat&logo=discord&logoColor=white&link=https://discord.gg/nNDMwTJ8)](https://discord.gg/6XdGnxVA2A)
 [![Hex.pm](https://img.shields.io/hexpm/v/credo_language_server)](https://hex.pm/packages/credo_language_server)
-![GitHub Discussions](https://img.shields.io/github/discussions/elixir-tools/discussions)
+[![GitHub Discussions](https://img.shields.io/github/discussions/elixir-tools/discussions)](https://github.com/orgs/elixir-tools/discussions)
 
 credo-language-server is an LSP implementation for Credo.
 
