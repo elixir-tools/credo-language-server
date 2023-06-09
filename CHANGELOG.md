@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.1.0](https://github.com/elixir-tools/credo-language-server/compare/v0.1.0-rc.3...v0.1.0) (2023-06-09)
+
+
+### Miscellaneous Chores
+
+* bump 0.1.0 ([42809b1](https://github.com/elixir-tools/credo-language-server/commit/42809b17d2df388db7565f94009bb4b679f62dae))
+
 ## 0.1.0-rc.3
 
 - feat: log runtime errors to the client by @mhanberg in https://github.com/elixir-tools/credo-language-server/pull/48
