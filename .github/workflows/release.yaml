@@ -21,7 +21,7 @@ jobs:
         id: release
         with:
           release-type: elixir
-          package-name: credo-language-server
+          package-name: credo_language_server
       - uses: actions/checkout@v3
         if: ${{ steps.release.outputs.release_created }}
       - uses: erlef/setup-beam@v1
