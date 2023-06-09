@@ -22,15 +22,19 @@ jobs:
         with:
           release-type: elixir
           package-name: credo_language_server
+
       - uses: actions/checkout@v3
         if: ${{ steps.release.outputs.release_created }}
+
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
         if: ${{ steps.release.outputs.release_created }}
+
       - uses: actions/cache@v3
         id: cache
+        if: ${{ steps.release.outputs.release_created }}
         with:
           path: |
             deps
@@ -38,9 +42,11 @@ jobs:
           key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
             ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
+
       - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.release.outputs.relase_created && steps.cache.outputs.cache-hit != 'true'
         run: mix deps.get
+
       - name: publish to hex
         if: ${{ steps.release.outputs.release_created }}
         env:
