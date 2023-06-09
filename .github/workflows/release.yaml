@@ -44,7 +44,7 @@ jobs:
             ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
 
       - name: Install Dependencies
-        if: steps.release.outputs.relase_created && steps.cache.outputs.cache-hit != 'true'
+        if: steps.release.outputs.release_created && steps.cache.outputs.cache-hit != 'true'
         run: mix deps.get
 
       - name: publish to hex
