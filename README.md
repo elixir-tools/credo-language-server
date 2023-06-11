@@ -27,34 +27,37 @@ Support for credo-language-server is currently in progress: https://github.com/e
 Using eglot:
 
 ```elisp
+(require 'eglot)
+
 (setq exec-path
       (append exec-path '("path/to/credo-language-server/bin")))
 
 (add-to-list
  'eglot-server-programs
  '((elixir-mode elixir-ts-mode) .
-   '("credo-language-server" "--stdio" "true")))
+   '("credo-language-server" "--stdio=true")))
 ```
 
 Eglot only allows one server per mode, but it is possible to
 configure eglot alternatives to prompt for a specific language server.
 
 ```elisp
-(setq exec-path
-      (append exec-path '("path/to/credo-language-server/bin")))
+(require 'eglot)
 
 (setq exec-path
-      (append exec-path '("path/to/elixir-ls/bin")))
+      (append exec-path
+              '("path/to/credo-language-server/bin"
+                "path/to/elixir-ls/bin")))
 
 (add-to-list
  'eglot-server-programs
- `((elixir-mode elixir-ts-mode) .
+ `((elixir-mode elixir-ts-mode heex-ts-mode) .
    ,(eglot-alternatives
      `(,(if (and (fboundp 'w32-shell-dos-semantics)
                  (w32-shell-dos-semantics))
             '("language_server.bat")
           '("language_server.sh"))
-       ("credo-language-server" "--stdio" "true")))))
+       ("credo-language-server" "--stdio=true")))))
 ```
 
 </details>
