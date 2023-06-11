@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.1.1](https://github.com/elixir-tools/credo-language-server/compare/v0.1.0...v0.1.1) (2023-06-11)
+
+
+### Bug Fixes
+
+* set -S for shebang in bin/credo-language-server ([#56](https://github.com/elixir-tools/credo-language-server/issues/56)) ([074c895](https://github.com/elixir-tools/credo-language-server/commit/074c895b522f0e3a2b9548ec665e9011746911a2))
+
 ## [0.1.0](https://github.com/elixir-tools/credo-language-server/compare/v0.1.0-rc.3...v0.1.0) (2023-06-09)
 
 
