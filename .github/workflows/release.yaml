@@ -22,6 +22,8 @@ jobs:
         with:
           release-type: elixir
           package-name: credo_language_server
+          extra-files: |
+            bin/credo-language-server
 
       - uses: actions/checkout@v3
         if: ${{ steps.release.outputs.release_created }}
@@ -53,3 +55,10 @@ jobs:
           HEX_API_KEY: ${{secrets.HEX_API_KEY}}
         run: |
           mix hex.publish --yes
+
+      - name: Upload Release Artifact
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run:
+          gh release upload ${{ steps.release.outputs.tag_name }} ./bin/credo-language-server
