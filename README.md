@@ -16,7 +16,52 @@ credo-language-server is an LSP implementation for Credo.
 <ul>
 <li>Neovim: <a href="https://github.com/elixir-tools/elixir-tools.nvim">elixir-tools.nvim</a></li>
 <li>VSCode: <a href="https://github.com/elixir-tools/elixir-tools.vscode">elixir-tools.vscode</a></li>
+<li>
+<details>
+<summary>Emacs</summary>
 
+Using lsp-mode:
+
+Support for credo-language-server is currently in progress: https://github.com/emacs-lsp/lsp-mode/pull/4068.
+
+Using eglot:
+
+```elisp
+(require 'eglot)
+
+(setq exec-path
+      (append exec-path '("path/to/credo-language-server/bin")))
+
+(add-to-list
+ 'eglot-server-programs
+ '((elixir-mode elixir-ts-mode) .
+   '("credo-language-server" "--stdio=true")))
+```
+
+Eglot only allows one server per mode, but it is possible to
+configure eglot alternatives to prompt for a specific language server.
+
+```elisp
+(require 'eglot)
+
+(setq exec-path
+      (append exec-path
+              '("path/to/credo-language-server/bin"
+                "path/to/elixir-ls/bin")))
+
+(add-to-list
+ 'eglot-server-programs
+ `((elixir-mode elixir-ts-mode heex-ts-mode) .
+   ,(eglot-alternatives
+     `(,(if (and (fboundp 'w32-shell-dos-semantics)
+                 (w32-shell-dos-semantics))
+            '("language_server.bat")
+          '("language_server.sh"))
+       ("credo-language-server" "--stdio=true")))))
+```
+
+</details>
+</li>
 <li>
 <details>
 <summary>Helix</summary>
