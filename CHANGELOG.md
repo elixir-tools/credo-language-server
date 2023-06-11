@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.1.2](https://github.com/elixir-tools/credo-language-server/compare/v0.1.1...v0.1.2) (2023-06-11)
+
+
+### Bug Fixes
+
+* improve credo-language-server binary ([#61](https://github.com/elixir-tools/credo-language-server/issues/61)) ([218873a](https://github.com/elixir-tools/credo-language-server/commit/218873a79310dee96ade2736b5b8be21402be3d7))
+
 ## [0.1.1](https://github.com/elixir-tools/credo-language-server/compare/v0.1.0...v0.1.1) (2023-06-11)
 
 
