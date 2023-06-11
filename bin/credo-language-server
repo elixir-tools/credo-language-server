@@ -2,6 +2,15 @@
 
 System.no_halt(true)
 
-Mix.install([:credo_language_server])
+Logger.configure(level: :none)
+
+Mix.start()
+Mix.shell(Mix.Shell.Process)
+
+default_version = "0.1.1" # x-release-please-version
+
+Mix.install([{:credo_language_server, System.get_env("CREDO_LSP_VERSION", default_version)}])
+
+Logger.configure(level: :info)
 
 Application.ensure_all_started(:credo_language_server)
