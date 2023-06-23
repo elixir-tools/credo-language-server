@@ -5,7 +5,7 @@ defmodule CredoLanguageServer.MixProject do
     [
       app: :credo_language_server,
       description: "LSP implementation for Credo",
-      version: "0.1.2",
+      version: "0.1.3",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
