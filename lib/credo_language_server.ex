@@ -152,7 +152,7 @@ defmodule CredoLanguageServer do
 
     working_dir = URI.parse(lsp.assigns.root_uri).path
 
-    GenLSP.log(lsp, "[Credo] Booting runime...")
+    GenLSP.log(lsp, "[Credo] Booting runtime...")
 
     {:ok, runtime} =
       DynamicSupervisor.start_child(
