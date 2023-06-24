@@ -22,12 +22,11 @@ credo-language-server is an LSP implementation for Credo.
 
 #### Using lsp-mode:
 
-Credo is part of lsp-mode and the language server can be installed by
-running `M-x lsp-install-server credo-language-server`.
+credo-language-server is included with [lsp-mode](https://github.com/emacs-lsp/lsp-mode) and can be installed by running `M-x lsp-install-server credo-language-server`.
 
 You might want to set the lsp-credo-version to the latest release:
 
-```
+```elisp
 (custom-set-variables '(lsp-credo-version "0.1.3"))
 ```
 
