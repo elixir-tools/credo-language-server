@@ -20,22 +20,36 @@ credo-language-server is an LSP implementation for Credo.
 <details>
 <summary>Emacs</summary>
 
-Using lsp-mode:
+#### Using lsp-mode:
 
-Support for credo-language-server is currently in progress: https://github.com/emacs-lsp/lsp-mode/pull/4068.
+credo-language-server is included with [lsp-mode](https://github.com/emacs-lsp/lsp-mode) and can be installed by running `M-x lsp-install-server credo-language-server`.
 
-Using eglot:
+You might want to set the lsp-credo-version to the latest release:
+
+```elisp
+(custom-set-variables '(lsp-credo-version "0.1.3"))
+```
+
+or by running `M-x customize-group lsp-credo` and updating the version.
+
+Visit [lsp-mode](https://github.com/emacs-lsp/lsp-mode) for detailed
+installation instructions.
+
+#### Using eglot:
 
 ```elisp
 (require 'eglot)
 
-(setq exec-path
-      (append exec-path '("path/to/credo-language-server/bin")))
+(add-to-list 'exec-path "path/to/credo-language-server/bin")
 
-(add-to-list
- 'eglot-server-programs
- '((elixir-mode elixir-ts-mode) .
-   '("credo-language-server" "--stdio=true")))
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               `((elixir-ts-mode heex-ts-mode elixir-mode) .
+                 ("credo-language-server" "--stdio=true"))))
+
+(add-hook 'elixir-mode-hook 'eglot-ensure)
+(add-hook 'elixir-ts-mode-hook 'eglot-ensure)
+(add-hook 'heex-ts-mode-hook 'eglot-ensure)
 ```
 
 Eglot only allows one server per mode, but it is possible to
