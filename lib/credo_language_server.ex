@@ -40,7 +40,10 @@ defmodule CredoLanguageServer do
     TextDocumentItem,
     TextDocumentSyncOptions,
     WorkDoneProgressBegin,
-    WorkDoneProgressEnd
+    WorkDoneProgressEnd,
+    WorkspaceFolder,
+    WorkspaceFoldersServerCapabilities,
+    WorkspaceFoldersChangeEvent
   }
 
   alias CredoLanguageServer.Cache, as: Diagnostics
@@ -72,9 +75,22 @@ defmodule CredoLanguageServer do
 
   @impl true
   def handle_request(
-        %Initialize{params: %InitializeParams{root_uri: root_uri}},
+        %Initialize{
+          params: %InitializeParams{
+            root_uri: root_uri,
+            workspace_folders: workspace_folders
+          }
+        },
         lsp
       ) do
+
+    GenLSP.info(lsp, "[Credo] params: #{inspect workspace_folders}")
+
+    lsp =
+      lsp
+      |> assign(root_uri: root_uri)
+      |> assign(workspace_folders: workspace_folders)
+
     {:reply,
      %InitializeResult{
        capabilities: %ServerCapabilities{
@@ -85,10 +101,16 @@ defmodule CredoLanguageServer do
          },
          code_action_provider: %CodeActionOptions{
            code_action_kinds: [CodeActionKind.quick_fix()]
+         },
+         workspace: %{
+           workspace_folders: %WorkspaceFoldersServerCapabilities{
+             supported: true,
+             change_notifications: true
+           }
          }
        },
        server_info: %{name: "Credo"}
-     }, assign(lsp, root_uri: root_uri)}
+     }, lsp}
   end
 
   def handle_request(
@@ -285,6 +307,20 @@ defmodule CredoLanguageServer do
         lsp
       ) do
     {:noreply, put_in(lsp.assigns.documents[uri], String.split(text, "\n"))}
+  end
+
+  def handle_notification(
+        %WorkspaceFoldersChangeEvent{
+          added: %WorkspaceFolder{} = added,
+          removed: %WorkspaceFolder{} = removed
+        },
+        lsp
+      ) do
+
+    GenLSP.warning(lsp, "[Credo] added: #{inspect added}")
+    GenLSP.warning(lsp, "[Credo] removed: #{inspect removed}")
+
+    {:noreply, lsp}
   end
 
   def handle_notification(%Exit{}, lsp) do
