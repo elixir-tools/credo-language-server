@@ -19,7 +19,7 @@ defmodule CredoLanguageServer.Runtime do
   end
 
   @spec call(pid(), mfa()) :: any()
-  def call(server, mfa), do: GenServer.call(server, {:call, mfa})
+  def call(server, mfa), do: GenServer.call(server, {:call, mfa}, :infinity)
 
   @spec ready?(pid()) :: boolean()
   def ready?(server), do: GenServer.call(server, :ready?)
