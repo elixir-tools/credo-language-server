@@ -134,6 +134,18 @@ Check: `Credo.Check.Readability.ModuleDoc`
 
 Inject a `@moduledoc false` snippet into the module.
 
+## Contributing
+
+### Running tests
+
+```sh
+# setup the test project
+$ (cd test/support/project && mix deps.get)
+
+# run the tests
+$ mix test
+```
+
 ---
 
 Built with [gen_lsp](https://github.com/mhanberg/gen_lsp)
