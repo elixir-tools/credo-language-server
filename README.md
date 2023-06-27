@@ -123,14 +123,13 @@ This should be added to your project's `.gitignore`.
 ## Contributing
 
 ### Running tests
-In order to run tests you first need to initialize the test project:
 
-```bash
-cd test/support/project && mix deps.get && cd ../../..
-```
+```sh
+# setup the test project
+$ (cd test/support/project && mix deps.get)
 
-Now you will be able to run `mix test` successfully!
-
+# run the tests
+$ mix test
 ## Code Actions
 
 ### DisableCheck
