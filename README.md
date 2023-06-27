@@ -120,16 +120,6 @@ Credo Language Server creates an `.elixir-tools` hidden directory in your projec
 
 This should be added to your project's `.gitignore`.
 
-## Contributing
-
-### Running tests
-
-```sh
-# setup the test project
-$ (cd test/support/project && mix deps.get)
-
-# run the tests
-$ mix test
 ## Code Actions
 
 ### DisableCheck
@@ -143,6 +133,18 @@ If there is a check that you'd wish to disable, you can trigger the code action 
 Check: `Credo.Check.Readability.ModuleDoc`
 
 Inject a `@moduledoc false` snippet into the module.
+
+## Contributing
+
+### Running tests
+
+```sh
+# setup the test project
+$ (cd test/support/project && mix deps.get)
+
+# run the tests
+$ mix test
+```
 
 ---
 
