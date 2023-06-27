@@ -120,6 +120,17 @@ Credo Language Server creates an `.elixir-tools` hidden directory in your projec
 
 This should be added to your project's `.gitignore`.
 
+## Contributing
+
+### Running tests
+In order to run tests you first need to initialize the test project:
+
+```bash
+cd test/support/project && mix deps.get && cd ../../..
+```
+
+Now you will be able to run `mix test` successfully!
+
 ## Code Actions
 
 ### DisableCheck
