@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.2.0](https://github.com/elixir-tools/credo-language-server/compare/v0.1.3...v0.2.0) (2023-06-27)
+
+
+### Features
+
+* log version when initialized ([#72](https://github.com/elixir-tools/credo-language-server/issues/72)) ([c4f0cac](https://github.com/elixir-tools/credo-language-server/commit/c4f0caccf5a11c4a26c90b42cf0d9759372b8e0a))
+
+
+### Bug Fixes
+
+* bump gen_lsp 0.3 ([#69](https://github.com/elixir-tools/credo-language-server/issues/69)) ([0fb8180](https://github.com/elixir-tools/credo-language-server/commit/0fb81804b5741514112c647144be21fe69aec489)), closes [#68](https://github.com/elixir-tools/credo-language-server/issues/68)
+* set Runtime.call/2 timeout to :infinity ([#70](https://github.com/elixir-tools/credo-language-server/issues/70)) ([909207b](https://github.com/elixir-tools/credo-language-server/commit/909207b81120232816dc47395feeff947705ef58)), closes [#67](https://github.com/elixir-tools/credo-language-server/issues/67)
+
 ## [0.1.3](https://github.com/elixir-tools/credo-language-server/compare/v0.1.2...v0.1.3) (2023-06-23)
 
 

@@ -7,7 +7,7 @@ Logger.configure(level: :none)
 Mix.start()
 Mix.shell(Mix.Shell.Process)
 
-default_version = "0.1.3" # x-release-please-version
+default_version = "0.2.0" # x-release-please-version
 
 Mix.install([{:credo_language_server, System.get_env("CREDO_LSP_VERSION", default_version)}])
 
