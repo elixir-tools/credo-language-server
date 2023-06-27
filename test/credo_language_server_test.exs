@@ -128,11 +128,10 @@ defmodule CredoLanguageServerTest do
                params: %{}
              })
 
-    assert_notification "window/logMessage",
-                        %{
-                          "message" => "[Credo] LSP Initialized!",
-                          "type" => 4
-                        }
+    assert_notification "window/logMessage", %{
+      "message" => "[Credo] Credo Language Server v" <> _,
+      "type" => 4
+    }
 
     assert_notification "$/progress", %{"value" => %{"kind" => "begin"}}
 

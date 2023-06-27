@@ -132,7 +132,10 @@ defmodule CredoLanguageServer do
 
   @impl true
   def handle_notification(%Initialized{}, lsp) do
-    GenLSP.log(lsp, "[Credo] LSP Initialized!")
+    GenLSP.log(
+      lsp,
+      "[Credo] Credo Language Server v#{version()} Initialized!"
+    )
 
     token =
       8
@@ -441,6 +444,13 @@ defmodule CredoLanguageServer do
     else
       Process.sleep(1000)
       wait_until(n - 1, cb)
+    end
+  end
+
+  defp version() do
+    case :application.get_key(:credo_language_server, :vsn) do
+      {:ok, version} -> to_string(version)
+      _ -> "dev"
     end
   end
 end
