@@ -12,14 +12,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        otp: [23.x, 24.x, 25.x]
-        elixir: [1.11.x, 1.12.x, 1.13.x, 1.14.x]
+        otp: [23.x, 24.x, 25.x, 26.x]
+        elixir: [1.11.x, 1.12.x, 1.13.x, 1.14.x, 1.15.x]
         credo: [1.6.7, 1.7.0]
         exclude:
+          - otp: 26.x
+            elixir: 1.11.x
+          - otp: 26.x
+            elixir: 1.12.x
+          - otp: 26.x
+            elixir: 1.13.x
           - otp: 25.x
             elixir: 1.11.x
           - otp: 25.x
             elixir: 1.12.x
+          - otp: 23.x
+            elixir: 1.15.x
+
     env:
       CREDO_LOCKFILE: ../../../lockfiles/mix-credo-${{matrix.credo}}.lock
       CI: true
@@ -62,10 +71,11 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    name: Formatter (1.14.x.x/25.x)
+    name: Lint (1.15.x.x/26.x)
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
+        id: beam
         with:
           otp-version: 25.x
           elixir-version: 1.14.x
@@ -75,9 +85,9 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-25-1.14-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-25-1.14-
+            ${{ runner.os }}-mix-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
