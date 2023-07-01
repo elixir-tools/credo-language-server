@@ -38,6 +38,27 @@ defmodule CredoLanguageServer.Check do
     end
 
     def fetch(%{
+          check: Credo.Check.Refactor.UnlessWithElse = check,
+          diagnostic: diagnostic,
+          uri: uri,
+          document: document
+        }) do
+      [
+        CodeAction.DisableCheck.new(
+          uri: uri,
+          diagnostic: diagnostic,
+          text: document,
+          check: Macro.to_string(check)
+        ),
+        CodeAction.UnlessWithElse.new(
+          uri: uri,
+          diagnostic: diagnostic,
+          text: document
+        )
+      ]
+    end
+
+    def fetch(%{
           check: check,
           diagnostic: diagnostic,
           uri: uri,
