@@ -16,19 +16,16 @@ defmodule CredoLanguageServer.Check do
   defimpl CredoLanguageServer.CodeActionable do
     alias CredoLanguageServer.CodeAction
 
-    def fetch(%{
-          check: Credo.Check.Readability.ModuleDoc = check,
-          diagnostic: diagnostic,
-          uri: uri,
-          document: document
-        }) do
+    def fetch(
+          %{
+            check: Credo.Check.Readability.ModuleDoc,
+            diagnostic: diagnostic,
+            uri: uri,
+            document: document
+          } = opts
+        ) do
       [
-        CodeAction.DisableCheck.new(
-          uri: uri,
-          diagnostic: diagnostic,
-          text: document,
-          check: Macro.to_string(check)
-        ),
+        disable_check(opts),
         CodeAction.ModuleDocFalse.new(
           uri: uri,
           diagnostic: diagnostic,
@@ -37,20 +34,40 @@ defmodule CredoLanguageServer.Check do
       ]
     end
 
-    def fetch(%{
-          check: check,
-          diagnostic: diagnostic,
-          uri: uri,
-          document: document
-        }) do
+    def fetch(
+          %{
+            check: Credo.Check.Readability.ParenthesesOnZeroArityDefs,
+            diagnostic: diagnostic,
+            uri: uri,
+            document: document
+          } = opts
+        ) do
       [
-        CodeAction.DisableCheck.new(
+        disable_check(opts),
+        CodeAction.ParenthesesOnZeroArityDefs.new(
           uri: uri,
           diagnostic: diagnostic,
-          text: document,
-          check: Macro.to_string(check)
+          text: document
         )
       ]
+    end
+
+    def fetch(opts) do
+      [disable_check(opts)]
+    end
+
+    defp disable_check(%{
+           check: check,
+           diagnostic: diagnostic,
+           uri: uri,
+           document: document
+         }) do
+      CodeAction.DisableCheck.new(
+        uri: uri,
+        diagnostic: diagnostic,
+        text: document,
+        check: Macro.to_string(check)
+      )
     end
   end
 end
