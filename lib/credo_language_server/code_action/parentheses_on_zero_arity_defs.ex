@@ -1,8 +1,5 @@
 defmodule CredoLanguageServer.CodeAction.ParenthesesOnZeroArityDefs do
-  @moduledoc """
-  Resolves the following Credo warning:
-  "Do not use parentheses when defining a function which has no arguments."
-  """
+  @moduledoc false
 
   alias GenLSP.Structures.{
     CodeAction,
@@ -35,11 +32,6 @@ defmodule CredoLanguageServer.CodeAction.ParenthesesOnZeroArityDefs do
     function_definition = Enum.at(text, start.line)
     new_text = String.replace(function_definition, "()", "")
 
-    position = %Position{
-      line: start.line,
-      character: String.length(function_definition)
-    }
-
     %CodeAction{
       title: "Remove parentheses",
       diagnostics: [diagnostic],
@@ -48,7 +40,13 @@ defmodule CredoLanguageServer.CodeAction.ParenthesesOnZeroArityDefs do
           uri => [
             %TextEdit{
               new_text: new_text,
-              range: %Range{start: start, end: position}
+              range: %Range{
+                start: start,
+                end: %Position{
+                  start
+                  | character: String.length(function_definition)
+                }
+              }
             }
           ]
         }

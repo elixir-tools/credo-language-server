@@ -3,6 +3,11 @@ defmodule CredoLanguageServer.Check do
   Data structure for Credo Checks.
   """
 
+  alias Credo.Check.Readability.{
+    ModuleDoc,
+    ParenthesesOnZeroArityDefs
+  }
+
   @doc """
   Data structure that holds information related to an instance of a check found by Credo.
   """
@@ -16,58 +21,47 @@ defmodule CredoLanguageServer.Check do
   defimpl CredoLanguageServer.CodeActionable do
     alias CredoLanguageServer.CodeAction
 
-    def fetch(
-          %{
-            check: Credo.Check.Readability.ModuleDoc,
-            diagnostic: diagnostic,
-            uri: uri,
-            document: document
-          } = opts
-        ) do
+    def fetch(%{check: ModuleDoc} = ca) do
       [
-        disable_check(opts),
+        CodeAction.DisableCheck.new(
+          uri: ca.uri,
+          diagnostic: ca.diagnostic,
+          text: ca.document,
+          check: Macro.to_string(ca.check)
+        ),
         CodeAction.ModuleDocFalse.new(
-          uri: uri,
-          diagnostic: diagnostic,
-          text: document
+          uri: ca.uri,
+          diagnostic: ca.diagnostic,
+          text: ca.document
         )
       ]
     end
 
-    def fetch(
-          %{
-            check: Credo.Check.Readability.ParenthesesOnZeroArityDefs,
-            diagnostic: diagnostic,
-            uri: uri,
-            document: document
-          } = opts
-        ) do
+    def fetch(%{check: ParenthesesOnZeroArityDefs} = ca) do
       [
-        disable_check(opts),
+        CodeAction.DisableCheck.new(
+          uri: ca.uri,
+          diagnostic: ca.diagnostic,
+          text: ca.document,
+          check: Macro.to_string(ca.check)
+        ),
         CodeAction.ParenthesesOnZeroArityDefs.new(
-          uri: uri,
-          diagnostic: diagnostic,
-          text: document
+          uri: ca.uri,
+          diagnostic: ca.diagnostic,
+          text: ca.document
         )
       ]
     end
 
-    def fetch(opts) do
-      [disable_check(opts)]
-    end
-
-    defp disable_check(%{
-           check: check,
-           diagnostic: diagnostic,
-           uri: uri,
-           document: document
-         }) do
-      CodeAction.DisableCheck.new(
-        uri: uri,
-        diagnostic: diagnostic,
-        text: document,
-        check: Macro.to_string(check)
-      )
+    def fetch(ca) do
+      [
+        CodeAction.DisableCheck.new(
+          uri: ca.uri,
+          diagnostic: ca.diagnostic,
+          text: ca.document,
+          check: Macro.to_string(ca.check)
+        )
+      ]
     end
   end
 end
