@@ -30,7 +30,7 @@ defmodule CredoLanguageServer.CodeAction.ParenthesesOnZeroArityDefs do
      }} = Schematic.unify(opts(), Map.new(opts))
 
     function_definition = Enum.at(text, start.line)
-    new_text = String.replace(function_definition, "()", "")
+    new_text = String.replace(function_definition, "()", "", global: false)
 
     %CodeAction{
       title: "Remove parentheses",

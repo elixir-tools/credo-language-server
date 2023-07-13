@@ -69,6 +69,36 @@ defmodule CredoLanguageServer.CodeAction.ParenthesesOnZeroArityDefsTest do
                  text: text,
                  uri: "uri"
                })
+
+      text = [
+        "defmodule Test do",
+        "  def foo(), do: bar()",
+        "end",
+        ""
+      ]
+
+      assert %CodeAction{
+               title: "Remove parentheses",
+               diagnostics: [^diagnostic],
+               edit: %WorkspaceEdit{
+                 changes: %{
+                   "uri" => [
+                     %TextEdit{
+                       new_text: "  def foo, do: bar()",
+                       range: %Range{
+                         start: %Position{character: 0, line: 1},
+                         end: %Position{character: 22, line: 1}
+                       }
+                     }
+                   ]
+                 }
+               }
+             } =
+               ParenthesesOnZeroArityDefs.new(%{
+                 diagnostic: diagnostic,
+                 text: text,
+                 uri: "uri"
+               })
     end
   end
 end
