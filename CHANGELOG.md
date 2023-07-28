@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.3.0](https://github.com/elixir-tools/credo-language-server/compare/v0.2.0...v0.3.0) (2023-07-28)
+
+
+### Features
+
+* add code action for the ParenthesesOnZeroArityDefs check ([#76](https://github.com/elixir-tools/credo-language-server/issues/76)) ([f846c9d](https://github.com/elixir-tools/credo-language-server/commit/f846c9d34a8d5b64516031df0d3b59122986839c))
+
 ## [0.2.0](https://github.com/elixir-tools/credo-language-server/compare/v0.1.3...v0.2.0) (2023-06-27)
 
 
