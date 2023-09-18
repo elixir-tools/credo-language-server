@@ -1,3 +1,6 @@
+> [!IMPORTANT]  
+> [Next LS](https://github.com/elixir-tools/next-ls) now has support for Credo, so Credo Language Server will not receive further significant updates.
+
 # credo-language-server
 
 [![Discord](https://img.shields.io/badge/Discord-5865F3?style=flat&logo=discord&logoColor=white&link=https://discord.gg/nNDMwTJ8)](https://discord.gg/6XdGnxVA2A)
